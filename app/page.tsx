@@ -1,7 +1,7 @@
 import type React from "react"
 import MarketplaceCarousel from "@/components/marketplace-carousel"
 import AccommodationCarousel from "@/components/accommodation-carousel"
-import { HeroSection } from "@/components/hero-section"
+import HeroSection from "@/components/hero-section"
 import { FeaturedListings } from "@/components/featured-listings"
 import { FeaturedAccommodations } from "@/components/featured-accommodations"
 import { TestimonialCarousel } from "@/components/testimonial-carousel"
@@ -17,17 +17,21 @@ import Link from "next/link"
 export default async function Home() {
   const session = await getSession()
 
-  let marketplaceListings
-  let accommodationListings
+  let marketplaceListings = []
+  let accommodationListings = []
 
-  if (session?.user) {
-    // Get personalized recommendations for logged-in users
-    marketplaceListings = await getRecommendedListings(session.user.id)
-    accommodationListings = await getRecommendedAccommodations(session.user.id)
-  } else {
-    // Get featured listings for guests
-    marketplaceListings = await getFeaturedListings()
-    accommodationListings = await getFeaturedAccommodations()
+  try {
+    if (session?.user) {
+      // Get personalized recommendations for logged-in users
+      marketplaceListings = await getRecommendedListings(session.user.id)
+      accommodationListings = await getRecommendedAccommodations(session.user.id)
+    } else {
+      // Get featured listings for guests
+      marketplaceListings = await getFeaturedListings()
+      accommodationListings = await getFeaturedAccommodations()
+    }
+  } catch (error) {
+    console.error("Error fetching data:", error)
   }
 
   return (
@@ -229,7 +233,7 @@ export default async function Home() {
           <div className="grid gap-8 md:grid-cols-4">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 bg-primary rounded-full flexx items-center justify-center text-primary-foreground font-bold">
+                <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-primary-foreground font-bold">
                   CM
                 </div>
                 <span className="text-xl font-bold">Campus Market</span>

@@ -11,8 +11,7 @@ export async function getMarketplaceListings() {
     .from("marketplace_listings")
     .select(`
       *,
-      marketplace_images (*),
-      profiles!marketplace_listings_user_id_fkey (*)
+      marketplace_images (*)
     `)
     .eq("status", "active")
     .order("created_at", { ascending: false })
@@ -20,6 +19,25 @@ export async function getMarketplaceListings() {
   if (error) {
     console.error("Error fetching marketplace listings:", error)
     return []
+  }
+
+  // Fetch user data separately
+  if (data && data.length > 0) {
+    const userIds = [...new Set(data.map((listing) => listing.user_id))]
+    const { data: profiles, error: profilesError } = await supabase.from("profiles").select("*").in("id", userIds)
+
+    if (!profilesError && profiles) {
+      // Create a map of user profiles
+      const profileMap = profiles.reduce((acc, profile) => {
+        acc[profile.id] = profile
+        return acc
+      }, {})
+
+      // Add profile data to listings
+      data.forEach((listing) => {
+        listing.profile = profileMap[listing.user_id] || null
+      })
+    }
   }
 
   return data
@@ -32,8 +50,7 @@ export async function getFeaturedListings(limit = 4) {
     .from("marketplace_listings")
     .select(`
       *,
-      marketplace_images (*),
-      profiles!marketplace_listings_user_id_fkey (*)
+      marketplace_images (*)
     `)
     .eq("status", "active")
     .order("created_at", { ascending: false })
@@ -42,6 +59,25 @@ export async function getFeaturedListings(limit = 4) {
   if (error) {
     console.error("Error fetching featured listings:", error)
     return []
+  }
+
+  // Fetch user data separately
+  if (data && data.length > 0) {
+    const userIds = [...new Set(data.map((listing) => listing.user_id))]
+    const { data: profiles, error: profilesError } = await supabase.from("profiles").select("*").in("id", userIds)
+
+    if (!profilesError && profiles) {
+      // Create a map of user profiles
+      const profileMap = profiles.reduce((acc, profile) => {
+        acc[profile.id] = profile
+        return acc
+      }, {})
+
+      // Add profile data to listings
+      data.forEach((listing) => {
+        listing.profile = profileMap[listing.user_id] || null
+      })
+    }
   }
 
   return data
@@ -54,8 +90,7 @@ export async function getMarketplaceListing(id: string) {
     .from("marketplace_listings")
     .select(`
       *,
-      marketplace_images (*),
-      profiles!marketplace_listings_user_id_fkey (*)
+      marketplace_images (*)
     `)
     .eq("id", id)
     .single()
@@ -63,6 +98,19 @@ export async function getMarketplaceListing(id: string) {
   if (error) {
     console.error("Error fetching marketplace listing:", error)
     return null
+  }
+
+  // Fetch user data separately
+  if (data) {
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", data.user_id)
+      .single()
+
+    if (!profileError && profile) {
+      data.profile = profile
+    }
   }
 
   return data
@@ -186,8 +234,7 @@ export async function getRecommendedListings(userId: string, limit = 4) {
     .from("marketplace_listings")
     .select(`
       *,
-      marketplace_images (*),
-      profiles!marketplace_listings_user_id_fkey (*)
+      marketplace_images (*)
     `)
     .eq("status", "active")
     .ilike("location", `%${profile.university}%`)
@@ -197,6 +244,25 @@ export async function getRecommendedListings(userId: string, limit = 4) {
   if (error || !data || data.length === 0) {
     // Fallback to featured listings if no matches or error
     return getFeaturedListings(limit)
+  }
+
+  // Fetch user data separately
+  if (data && data.length > 0) {
+    const userIds = [...new Set(data.map((listing) => listing.user_id))]
+    const { data: profiles, error: profilesError } = await supabase.from("profiles").select("*").in("id", userIds)
+
+    if (!profilesError && profiles) {
+      // Create a map of user profiles
+      const profileMap = profiles.reduce((acc, profile) => {
+        acc[profile.id] = profile
+        return acc
+      }, {})
+
+      // Add profile data to listings
+      data.forEach((listing) => {
+        listing.profile = profileMap[listing.user_id] || null
+      })
+    }
   }
 
   return data

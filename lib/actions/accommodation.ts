@@ -22,6 +22,25 @@ export async function getAccommodationListings() {
     return []
   }
 
+  // Fetch user data separately
+  if (data && data.length > 0) {
+    const userIds = [...new Set(data.map((listing) => listing.user_id))]
+    const { data: profiles, error: profilesError } = await supabase.from("profiles").select("*").in("id", userIds)
+
+    if (!profilesError && profiles) {
+      // Create a map of user profiles
+      const profileMap = profiles.reduce((acc, profile) => {
+        acc[profile.id] = profile
+        return acc
+      }, {})
+
+      // Add profile data to listings
+      data.forEach((listing) => {
+        listing.profile = profileMap[listing.user_id] || null
+      })
+    }
+  }
+
   return data
 }
 
@@ -32,8 +51,7 @@ export async function getFeaturedAccommodations(limit = 4) {
     .from("accommodation_listings")
     .select(`
       *,
-      accommodation_images (*),
-      profiles!accommodation_listings_user_id_fkey (*)
+      accommodation_images (*)
     `)
     .eq("status", "active")
     .eq("is_verified", true)
@@ -43,6 +61,25 @@ export async function getFeaturedAccommodations(limit = 4) {
   if (error) {
     console.error("Error fetching featured accommodations:", error)
     return []
+  }
+
+  // Fetch user data separately
+  if (data && data.length > 0) {
+    const userIds = [...new Set(data.map((listing) => listing.user_id))]
+    const { data: profiles, error: profilesError } = await supabase.from("profiles").select("*").in("id", userIds)
+
+    if (!profilesError && profiles) {
+      // Create a map of user profiles
+      const profileMap = profiles.reduce((acc, profile) => {
+        acc[profile.id] = profile
+        return acc
+      }, {})
+
+      // Add profile data to listings
+      data.forEach((listing) => {
+        listing.profile = profileMap[listing.user_id] || null
+      })
+    }
   }
 
   return data
@@ -57,8 +94,7 @@ export async function getAccommodationListing(id: string) {
       *,
       accommodation_images (*),
       accommodation_amenities (*),
-      accommodation_rules (*),
-      profiles!accommodation_listings_user_id_fkey (*)
+      accommodation_rules (*)
     `)
     .eq("id", id)
     .single()
@@ -66,6 +102,19 @@ export async function getAccommodationListing(id: string) {
   if (error) {
     console.error("Error fetching accommodation listing:", error)
     return null
+  }
+
+  // Fetch user data separately
+  if (data) {
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", data.user_id)
+      .single()
+
+    if (!profileError && profile) {
+      data.profile = profile
+    }
   }
 
   return data
@@ -98,7 +147,7 @@ export async function getUserAccommodationApplications(userId: string) {
     .from("accommodation_applications")
     .select(`
       *,
-      accommodation_listings!accommodation_applications_listing_id_fkey (
+      accommodation_listings (
         *,
         accommodation_images (*)
       )
@@ -333,8 +382,7 @@ export async function getRecommendedAccommodations(userId: string, limit = 4) {
     .from("accommodation_listings")
     .select(`
       *,
-      accommodation_images (*),
-      profiles!accommodation_listings_user_id_fkey (*)
+      accommodation_images (*)
     `)
     .eq("status", "active")
     .eq("is_verified", true)
@@ -345,6 +393,25 @@ export async function getRecommendedAccommodations(userId: string, limit = 4) {
   if (error || !data || data.length === 0) {
     // Fallback to featured accommodations if no matches or error
     return getFeaturedAccommodations(limit)
+  }
+
+  // Fetch user data separately
+  if (data && data.length > 0) {
+    const userIds = [...new Set(data.map((listing) => listing.user_id))]
+    const { data: profiles, error: profilesError } = await supabase.from("profiles").select("*").in("id", userIds)
+
+    if (!profilesError && profiles) {
+      // Create a map of user profiles
+      const profileMap = profiles.reduce((acc, profile) => {
+        acc[profile.id] = profile
+        return acc
+      }, {})
+
+      // Add profile data to listings
+      data.forEach((listing) => {
+        listing.profile = profileMap[listing.user_id] || null
+      })
+    }
   }
 
   return data

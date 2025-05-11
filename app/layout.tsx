@@ -1,46 +1,46 @@
 import type React from "react"
-import "./globals.css"
-import type { Metadata, Viewport } from "next"
+import type { Metadata } from "next"
 import { Inter } from "next/font/google"
+import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
-import { Toaster } from "@/components/ui/toaster"
 import Navigation from "@/components/navigation"
-
-// Import components directly without destructuring
 import { AuthProvider } from "@/components/providers/auth-provider"
 import { OfflineSyncProvider } from "@/components/providers/offline-sync-provider"
+
+import { createServerClient } from "@/lib/supabase/server"
+import NetworkStatus from "@/components/network-status"
+import PerformanceMonitor from "@/components/performance-monitor"
+import PushNotificationManager from "@/components/push-notification-manager"
+import PwaInstallPrompt from "@/components/pwa-install-prompt"
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Modern Campus Market",
-  description: "Buy, sell, and find accommodation in your campus community",
-  manifest: "/manifest.json",
+  title: "Campus Market",
+  description: "Buy, sell, and find accommodation for students",
     generator: 'v0.dev'
 }
 
-export const viewport: Viewport = {
-  themeColor: "#ffffff",
-  width: "device-width",
-  initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-}
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const supabase = createServerClient()
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+  // Use await with cookies().get()
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <AuthProvider>
             <OfflineSyncProvider>
-              <div className="min-h-screen flex flex-col">
-                <Navigation />
-                <main className="flex-1">
-                  <div className="container mx-auto px-4 py-4">{children}</div>
-                </main>
-              </div>
-              <Toaster />
+              <Navigation />
+              <NetworkStatus />
+              <PwaInstallPrompt />
+              <PushNotificationManager />
+              <PerformanceMonitor />
+              {children}
             </OfflineSyncProvider>
           </AuthProvider>
         </ThemeProvider>
