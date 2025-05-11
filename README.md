@@ -24,6 +24,27 @@ Campus Market ZW is a vibrant, student-driven marketplace designed to make campu
 
 ---
 
+## 👨‍💻 For Developers
+
+Welcome, developers! This section highlights everything you need to get started, contribute, and understand the architecture of Campus Market ZW.
+
+- **Quick Start:**
+  - Clone, install (pnpm), and run locally in minutes (see 'Get Started' below).
+- **Tech Stack:**
+  - Next.js 15, Tailwind CSS, Supabase, pnpm, Radix UI, Framer Motion, and more.
+- **Project Structure:**
+  - `/app` (pages), `/components` (UI & logic), `/hooks`, `/lib`, `/public`, `/styles`.
+- **Key Features:**
+  - Real-time chat, animated carousels, admin dashboard, authentication, PWA, and more.
+- **Contribution:**
+  - Fork, branch, code, and PR! See [Contributing](#-contributing) for details.
+- **Customization:**
+  - Theming via `tailwind.config.ts`, accessible and responsive by default.
+- **Support:**
+  - Open issues on GitHub or email us at [contact@campusmarket.co.zw](mailto:contact@campusmarket.co.zw).
+
+---
+
 ## 🎬 Preview
 
 <p align="center">
