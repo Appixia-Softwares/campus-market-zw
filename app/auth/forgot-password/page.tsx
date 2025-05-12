@@ -5,12 +5,13 @@ import type React from "react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { AlertCircle, ArrowLeft, CheckCircle } from "lucide-react"
+import { AlertCircle, ArrowLeft, CheckCircle, Mail } from "lucide-react"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
+import { AuthIllustration } from "@/components/auth/auth-illustration"
+import { LogoWithText } from "@/components/logo"
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("")
@@ -42,41 +43,53 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="container flex items-center justify-center min-h-screen py-12">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <div className="flex items-center mb-2">
-            <Button variant="ghost" size="icon" asChild className="mr-2">
-              <Link href="/auth/signin">
-                <ArrowLeft className="w-4 h-4" />
-              </Link>
-            </Button>
-            <CardTitle>Reset Password</CardTitle>
+    <div className="container relative flex min-h-screen flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
+      <AuthIllustration type="forgot-password" />
+      <div className="lg:p-8">
+        <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
+          <div className="flex flex-col space-y-2 text-center">
+            <div className="flex justify-center mb-6">
+              <LogoWithText size="md" />
+            </div>
+            <h1 className="text-2xl font-semibold tracking-tight">Reset Password</h1>
+            <p className="text-sm text-muted-foreground">
+              Enter your email address and we'll send you a link to reset your password
+            </p>
           </div>
-          <CardDescription>Enter your email address and we'll send you a link to reset your password.</CardDescription>
-        </CardHeader>
-        <CardContent>
+
           {error && (
-            <Alert variant="destructive" className="mb-4">
-              <AlertCircle className="w-4 h-4" />
+            <Alert variant="destructive" className="animate-fade-in">
+              <AlertCircle className="h-4 w-4" />
               <AlertTitle>Error</AlertTitle>
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
 
           {success ? (
-            <Alert className="mb-4 border-green-500">
-              <CheckCircle className="w-4 h-4 text-green-500" />
-              <AlertTitle>Check your email</AlertTitle>
-              <AlertDescription>
-                We've sent a password reset link to {email}. Please check your inbox and follow the instructions.
-              </AlertDescription>
-            </Alert>
+            <div className="space-y-4 animate-fade-in">
+              <Alert className="border-green-500 bg-green-50 dark:bg-green-900/20">
+                <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+                <AlertTitle>Check your email</AlertTitle>
+                <AlertDescription>
+                  We've sent a password reset link to <span className="font-medium">{email}</span>. Please check your
+                  inbox and follow the instructions.
+                </AlertDescription>
+              </Alert>
+              <div className="flex justify-center">
+                <Button variant="outline" asChild className="transition-all duration-200">
+                  <Link href="/auth/signin" className="flex items-center gap-2">
+                    <ArrowLeft className="h-4 w-4" /> Back to Sign In
+                  </Link>
+                </Button>
+              </div>
+            </div>
           ) : (
-            <form onSubmit={handleSubmit}>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+            <form onSubmit={handleSubmit} className="animate-fade-in-up">
+              <div className="grid gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="email" className="flex items-center gap-1">
+                    <Mail className="h-4 w-4" /> Email
+                  </Label>
                   <Input
                     id="email"
                     type="email"
@@ -84,24 +97,51 @@ export default function ForgotPasswordPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
+                    className="transition-all duration-200 focus:ring-2 focus:ring-primary"
                   />
                 </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Sending..." : "Send Reset Link"}
+                <Button
+                  type="submit"
+                  className="w-full transition-all duration-200 hover:shadow-md"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <div className="flex items-center gap-2">
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
+                      <span>Sending...</span>
+                    </div>
+                  ) : (
+                    "Send Reset Link"
+                  )}
                 </Button>
               </div>
             </form>
           )}
-        </CardContent>
-        <CardFooter className="flex justify-center">
-          <div className="text-sm text-muted-foreground">
-            Remember your password?{" "}
-            <Link href="/auth/signin" className="text-primary hover:underline">
-              Sign in
-            </Link>
-          </div>
-        </CardFooter>
-      </Card>
+
+          {!success && (
+            <>
+              <div className="relative my-4">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t"></span>
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">Or</span>
+                </div>
+              </div>
+
+              <div className="text-center text-sm">
+                Remember your password?{" "}
+                <Link
+                  href="/auth/signin"
+                  className="text-primary hover:underline hover:text-primary/90 transition-colors font-medium"
+                >
+                  Sign in
+                </Link>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
     </div>
   )
 }
