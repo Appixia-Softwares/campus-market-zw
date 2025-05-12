@@ -178,13 +178,12 @@ First, try to resolve it directly with the buyer or seller via messaging. If unr
 ## 🖼️ Animated Previews
 
 - **Marketplace Carousel:**
-  <img src="public/placeholder.jpg" alt="Marketplace Carousel Preview" width="400"/>
+  <img src="public/preview.png" alt="Marketplace Carousel Preview" width="400"/>
 - **Accommodation Carousel:**
-  <img src="public/placeholder.jpg" alt="Accommodation Carousel Preview" width="400"/>
-- **Testimonial Carousel:**
-  <img src="public/placeholder.jpg" alt="Testimonial Carousel Preview" width="400"/>
+  <img src="public/preview.png" alt="Accommodation Carousel Preview" width="400"/>
+- **Testimonial Carousel:**public/preview.pngpublic/placeholder.jpg" alt="Testimonial Carousel Preview" width="400"/>
 - **Real-Time Chat:**
-  <img src="public/placeholder-user.jpg" alt="Chat Preview" width="400"/>
+  <img src="public/preview.png" alt="Chat Preview" width="400"/>
 
 ---
 
