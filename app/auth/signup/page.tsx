@@ -6,7 +6,6 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import Link from "next/link"
 import { User, Mail, Building, Lock, ArrowRight } from "lucide-react"
 import { signUp } from "@/lib/actions/auth"
@@ -16,10 +15,17 @@ import { AuthIllustration } from "@/components/auth/auth-illustration"
 import { LogoWithText } from "@/components/logo"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle } from "lucide-react"
+import { CountrySelector } from "@/components/country-selector"
+import { CitySelector } from "@/components/city-selector"
+import { UniversitySelector } from "@/components/university-selector"
+import { useToast } from "@/components/ui/use-toast"
 
 export default function SignUpPage() {
+  const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
-  const [university, setUniversity] = useState("")
+  const [selectedCountry, setSelectedCountry] = useState<string | null>(null)
+  const [selectedCity, setSelectedCity] = useState<string | null>(null)
+  const [selectedUniversity, setSelectedUniversity] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [step, setStep] = useState(1)
   const [formData, setFormData] = useState({
@@ -48,7 +54,15 @@ export default function SignUpPage() {
   }
 
   const validateStep2 = () => {
-    if (!university) {
+    if (!selectedCountry) {
+      setError("Please select your country")
+      return false
+    }
+    if (!selectedCity) {
+      setError("Please select your city")
+      return false
+    }
+    if (!selectedUniversity) {
       setError("Please select your university")
       return false
     }
@@ -79,35 +93,45 @@ export default function SignUpPage() {
     setStep(1)
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if (!validateStep2()) return
-
+  async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
     setIsLoading(true)
     setError(null)
 
-    // Create FormData object
-    const submitData = new FormData()
-    submitData.append("fullName", formData.fullName)
-    submitData.append("email", formData.email)
-    submitData.append("university", university)
-    submitData.append("password", formData.password)
+    try {
+      const formData = new FormData(event.currentTarget)
+      formData.append("countryId", selectedCountry || "")
+      formData.append("cityId", selectedCity || "")
+      formData.append("universityId", selectedUniversity || "")
+      const result = await signUp(formData)
 
-    const result = await signUp(submitData)
+      if (result.error) {
+        setError(result.error)
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: result.error,
+        })
+        return
+      }
 
-    setIsLoading(false)
-
-    if (result.error) {
-      setError(result.error)
-      return
+      if (result.success) {
+        toast({
+          title: "Success",
+          description: result.message,
+        })
+        router.push("/auth/verify-email")
+      }
+    } catch (error) {
+      setError("An unexpected error occurred")
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+      })
+    } finally {
+      setIsLoading(false)
     }
-
-    toast({
-      title: "Success",
-      description: result.message,
-    })
-
-    router.push("/auth/signin")
   }
 
   return (
@@ -131,7 +155,7 @@ export default function SignUpPage() {
             </Alert>
           )}
 
-          <form onSubmit={handleSubmit} className="animate-fade-in-up">
+          <form onSubmit={onSubmit} className="animate-fade-in-up">
             <div className="grid gap-4">
               {step === 1 ? (
                 <>
@@ -174,22 +198,41 @@ export default function SignUpPage() {
                 </>
               ) : (
                 <>
-                  <div className="grid gap-2">
-                    <Label htmlFor="university" className="flex items-center gap-1">
-                      <Building className="h-4 w-4" /> University
-                    </Label>
-                    <Select value={university} onValueChange={setUniversity} required>
-                      <SelectTrigger className="transition-all duration-200 focus:ring-2 focus:ring-primary">
-                        <SelectValue placeholder="Select your university" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="University of Zimbabwe">University of Zimbabwe (UZ)</SelectItem>
-                        <SelectItem value="National University of Science and Technology">NUST</SelectItem>
-                        <SelectItem value="Midlands State University">MSU</SelectItem>
-                        <SelectItem value="Harare Institute of Technology">HIT</SelectItem>
-                        <SelectItem value="Other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
+                  <div className="grid gap-4">
+                    <div className="grid gap-2">
+                      <Label className="flex items-center gap-1">
+                        <Building className="h-4 w-4" /> Country
+                      </Label>
+                      <CountrySelector
+                        onSelect={(country) => {
+                          setSelectedCountry(country.id)
+                          setSelectedCity(null)
+                          setSelectedUniversity(null)
+                        }}
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label className="flex items-center gap-1">
+                        <Building className="h-4 w-4" /> City
+                      </Label>
+                      <CitySelector
+                        countryId={selectedCountry}
+                        onSelect={(city) => {
+                          setSelectedCity(city.id)
+                          setSelectedUniversity(null)
+                        }}
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label className="flex items-center gap-1">
+                        <Building className="h-4 w-4" /> University
+                      </Label>
+                      <UniversitySelector
+                        countryId={selectedCountry}
+                        cityId={selectedCity}
+                        onSelect={(university) => setSelectedUniversity(university.id)}
+                      />
+                    </div>
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="password" className="flex items-center gap-1">

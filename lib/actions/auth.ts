@@ -1,69 +1,120 @@
 "use server"
 
-import { createServerClient } from "@/lib/supabase/server"
+import { createServerClient, createServiceClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { revalidatePath } from "next/cache"
 
 export async function signUp(formData: FormData) {
-  const email = formData.get("email") as string
-  const password = formData.get("password") as string
-  const fullName = formData.get("fullName") as string
-  const countryId = formData.get("countryId") as string
-  const languageId = formData.get("languageId") as string
+  try {
+    const email = formData.get("email") as string
+    const password = formData.get("password") as string
+    const fullName = formData.get("fullName") as string
+    const countryId = formData.get("countryId") as string
+    const cityId = formData.get("cityId") as string
+    const universityId = formData.get("universityId") as string
 
-  const supabase = createServerClient()
+    // Validate required fields
+    if (!email || !password || !fullName) {
+      return { error: "Please fill in all required fields" }
+    }
 
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: {
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
-      data: {
-        full_name: fullName,
-      },
-    },
-  })
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      return { error: "Please enter a valid email address" }
+    }
 
-  if (error) {
-    return { error: error.message }
-  }
+    // Validate password strength
+    if (password.length < 6) {
+      return { error: "Password must be at least 6 characters long" }
+    }
 
-  // Create profile
-  if (data.user) {
-    const { error: profileError } = await supabase.from("profiles").insert({
-      id: data.user.id,
-      full_name: fullName,
-      country_id: countryId || null,
-      preferred_language_id: languageId || null,
-      role: "student", // Default role
-      is_verified: false, // Needs verification
-      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    const supabase = createServerClient()
+    const serviceClient = createServiceClient()
+
+    // Check if email already exists
+    const { data: existingUser } = await supabase.auth.signInWithPassword({
+      email,
+      password,
     })
 
-    if (profileError) {
-      return { error: profileError.message }
+    if (existingUser?.user) {
+      return { error: "An account with this email already exists" }
     }
-  }
 
-  return { success: true, message: "Check your email to confirm your account" }
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
+        data: {
+          full_name: fullName,
+        },
+      },
+    })
+
+    if (error) {
+      return { error: error.message }
+    }
+
+    // Create profile using service client to bypass RLS
+    if (data.user) {
+      const { error: profileError } = await serviceClient.from("profiles").insert({
+        id: data.user.id,
+        full_name: fullName,
+        country_id: countryId || null,
+        city_id: cityId || null,
+        university_id: universityId || null,
+        role: "student", // Default role
+        is_verified: false, // Needs verification
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      })
+
+      if (profileError) {
+        // If profile creation fails, delete the auth user
+        await supabase.auth.admin.deleteUser(data.user.id)
+        return { error: "Failed to create profile. Please try again." }
+      }
+    }
+
+    return { 
+      success: true, 
+      message: "Account created successfully! Please check your email to confirm your account." 
+    }
+  } catch (error) {
+    console.error("Signup error:", error)
+    return { error: "An unexpected error occurred. Please try again." }
+  }
 }
 
 export async function signIn(formData: FormData) {
-  const email = formData.get("email") as string
-  const password = formData.get("password") as string
+  try {
+    const email = formData.get("email") as string
+    const password = formData.get("password") as string
 
-  const supabase = createServerClient()
+    if (!email || !password) {
+      return { error: "Please fill in all fields" }
+    }
 
-  const { error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  })
+    const supabase = createServerClient()
 
-  if (error) {
-    return { error: error.message }
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
+
+    if (error) {
+      if (error.message.includes("Invalid login credentials")) {
+        return { error: "Invalid email or password" }
+      }
+      return { error: error.message }
+    }
+
+    return { success: true }
+  } catch (error) {
+    console.error("Sign in error:", error)
+    return { error: "An unexpected error occurred. Please try again." }
   }
-
-  return { success: true }
 }
 
 export async function signOut() {

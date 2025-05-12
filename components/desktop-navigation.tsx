@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Building, User, LogOut, Settings, Shield } from "lucide-react"
 import { signOut } from "@/lib/actions/auth"
-import Notifications from "@/components/notifications"
+import { Notifications } from "./notifications"
 
 export default function DesktopNavigation() {
   const pathname = usePathname()

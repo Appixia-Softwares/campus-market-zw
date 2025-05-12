@@ -13,6 +13,7 @@ import { signIn } from "@/lib/actions/auth"
 import { useRouter } from "next/navigation"
 import { AuthIllustration } from "@/components/auth/auth-illustration"
 import { LogoWithText } from "@/components/logo"
+import { useToast } from "@/components/ui/use-toast"
 
 export default function SignInPage() {
   const [email, setEmail] = useState("")
@@ -20,6 +21,7 @@ export default function SignInPage() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+  const { toast } = useToast()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -27,14 +29,33 @@ export default function SignInPage() {
     setError(null)
 
     try {
-      const result = await signIn(email, password)
+      const formData = new FormData(e.currentTarget as HTMLFormElement)
+      const result = await signIn(formData)
+
       if (result.error) {
         setError(result.error)
-      } else {
-        router.push("/")
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: result.error,
+        })
+        return
+      }
+
+      if (result.success) {
+        toast({
+          title: "Success",
+          description: "Signed in successfully",
+        })
+        router.push("/dashboard")
       }
     } catch (error: any) {
       setError(error.message || "An error occurred. Please try again.")
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+      })
     } finally {
       setIsLoading(false)
     }

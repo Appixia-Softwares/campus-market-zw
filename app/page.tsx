@@ -79,8 +79,8 @@ export default async function Home() {
     <main className="overflow-x-hidden">
       <HeroSection />
       <HowItWorksSection />
-      <MarketplacePreviewSection listings={marketplaceListings} />
-      <AccommodationPreviewSection listings={accommodationListings} />
+      <MarketplacePreviewSection listings={marketplaceListings as never } />
+      <AccommodationPreviewSection listings={accommodationListings as never} />
       <WhyChooseUsSection />
       <TestimonialsSection />
       <JoinNowSection />

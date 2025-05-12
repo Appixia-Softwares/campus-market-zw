@@ -10,9 +10,8 @@ import { notFound } from "next/navigation"
 import { formatDistanceToNow } from "date-fns"
 import { Suspense } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
-import OrderForm from "@/components/order-form"
 import { getSession } from "@/lib/actions/auth"
-
+import { OrderForm } from "@/components/order-form"
 export default async function ProductPage({ params }: { params: { id: string } }) {
   return (
     <Suspense
@@ -196,19 +195,18 @@ async function ProductContent({ id }: { id: string }) {
               </CardContent>
             </Card>
           </div>
-        </div>
 
         {/* Product description */}
         <Card>
           <CardContent className="p-6">
             <h2 className="mb-4 text-xl font-bold">Description</h2>
             <p className="whitespace-pre-line">{listing.description}</p>
-          </Card>
+          </CardContent>
         </Card>
 
         {/* Order form */}
         {!isSeller && session && (
-          Card id="order-form">
+          <Card id="order-form">
             <CardContent className="p-6">
               <h2 className="mb-4 text-xl font-bold">Place Order</h2>
               <OrderForm listingId={listing.id} sellerId={listing.user_id} price={listing.price} />
@@ -250,6 +248,7 @@ async function ProductContent({ id }: { id: string }) {
           </div>
         </div>
       </div>
-  </div>
+    </div>
+    </div>
   )
 }
