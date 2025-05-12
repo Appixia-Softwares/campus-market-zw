@@ -103,6 +103,10 @@ export default function SignUpPage() {
       formData.append("countryId", selectedCountry || "")
       formData.append("cityId", selectedCity || "")
       formData.append("universityId", selectedUniversity || "")
+      // Debug: log all form data
+      for (const [key, value] of formData.entries()) {
+        console.log(key, value)
+      }
       const result = await signUp(formData)
 
       if (result.error) {
