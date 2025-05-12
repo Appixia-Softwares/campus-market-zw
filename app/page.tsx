@@ -14,7 +14,7 @@ export default async function Home() {
   const session = await getSession()
 
   // Fetch marketplace listings directly from the database
-  const { data: marketplaceListingsRaw, error: marketplaceError } = await supabase
+  const { data: marketplaceListings = [], error: marketplaceError } = await supabase
     .from("marketplace_listings")
     .select(`
       *,
@@ -24,14 +24,12 @@ export default async function Home() {
     .order("created_at", { ascending: false })
     .limit(8)
 
-  const marketplaceListings: any[] = marketplaceListingsRaw ?? []
-
   if (marketplaceError) {
     console.error("Error fetching marketplace listings:", marketplaceError)
   }
 
   // Fetch accommodation listings directly from the database
-  const { data: accommodationListingsRaw, error: accommodationError } = await supabase
+  const { data: accommodationListings = [], error: accommodationError } = await supabase
     .from("accommodation_listings")
     .select(`
       *,
@@ -40,8 +38,6 @@ export default async function Home() {
     .eq("status", "active")
     .order("created_at", { ascending: false })
     .limit(8)
-
-  const accommodationListings: any[] = accommodationListingsRaw ?? []
 
   if (accommodationError) {
     console.error("Error fetching accommodation listings:", accommodationError)
@@ -67,12 +63,12 @@ export default async function Home() {
         }, {})
 
         // Add profile data to marketplace listings
-        marketplaceListings.forEach((listing: any) => {
+        marketplaceListings.forEach((listing) => {
           listing.profile = profileMap[listing.user_id] || null
         })
 
         // Add profile data to accommodation listings
-        accommodationListings.forEach((listing: any) => {
+        accommodationListings.forEach((listing) => {
           listing.profile = profileMap[listing.user_id] || null
         })
       }
@@ -83,8 +79,8 @@ export default async function Home() {
     <main className="overflow-x-hidden">
       <HeroSection />
       <HowItWorksSection />
-      <MarketplacePreviewSection listings={marketplaceListings as never} />
-      <AccommodationPreviewSection listings={accommodationListings as never} />
+      <MarketplacePreviewSection listings={marketplaceListings} />
+      <AccommodationPreviewSection listings={accommodationListings} />
       <WhyChooseUsSection />
       <TestimonialsSection />
       <JoinNowSection />

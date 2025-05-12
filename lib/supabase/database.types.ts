@@ -10,6 +10,9 @@ export interface Database {
           full_name: string | null
           avatar_url: string | null
           university: string | null
+          university_id: string | null
+          country_id: string | null
+          city_id: string | null
           student_id: string | null
           phone: string | null
           is_verified: boolean
@@ -17,6 +20,9 @@ export interface Database {
           created_at: string
           updated_at: string
           role: string
+          preferred_currency_id: string | null
+          preferred_language_id: string | null
+          timezone: string | null
         }
         Insert: {
           id: string
@@ -24,6 +30,9 @@ export interface Database {
           full_name?: string | null
           avatar_url?: string | null
           university?: string | null
+          university_id?: string | null
+          country_id?: string | null
+          city_id?: string | null
           student_id?: string | null
           phone?: string | null
           is_verified?: boolean
@@ -31,6 +40,9 @@ export interface Database {
           created_at?: string
           updated_at?: string
           role?: string
+          preferred_currency_id?: string | null
+          preferred_language_id?: string | null
+          timezone?: string | null
         }
         Update: {
           id?: string
@@ -38,6 +50,9 @@ export interface Database {
           full_name?: string | null
           avatar_url?: string | null
           university?: string | null
+          university_id?: string | null
+          country_id?: string | null
+          city_id?: string | null
           student_id?: string | null
           phone?: string | null
           is_verified?: boolean
@@ -45,6 +60,9 @@ export interface Database {
           created_at?: string
           updated_at?: string
           role?: string
+          preferred_currency_id?: string | null
+          preferred_language_id?: string | null
+          timezone?: string | null
         }
       }
       marketplace_listings: {
@@ -60,6 +78,11 @@ export interface Database {
           status: string
           created_at: string
           updated_at: string
+          country_id: string | null
+          city_id: string | null
+          university_id: string | null
+          currency_id: string | null
+          language_id: string | null
         }
         Insert: {
           id?: string
@@ -73,6 +96,11 @@ export interface Database {
           status?: string
           created_at?: string
           updated_at?: string
+          country_id?: string | null
+          city_id?: string | null
+          university_id?: string | null
+          currency_id?: string | null
+          language_id?: string | null
         }
         Update: {
           id?: string
@@ -86,6 +114,11 @@ export interface Database {
           status?: string
           created_at?: string
           updated_at?: string
+          country_id?: string | null
+          city_id?: string | null
+          university_id?: string | null
+          currency_id?: string | null
+          language_id?: string | null
         }
       }
       marketplace_images: {
@@ -125,6 +158,12 @@ export interface Database {
           status: string
           created_at: string
           updated_at: string
+          views: number | null
+          country_id: string | null
+          city_id: string | null
+          university_id: string | null
+          currency_id: string | null
+          language_id: string | null
         }
         Insert: {
           id?: string
@@ -139,6 +178,12 @@ export interface Database {
           status?: string
           created_at?: string
           updated_at?: string
+          views?: number | null
+          country_id?: string | null
+          city_id?: string | null
+          university_id?: string | null
+          currency_id?: string | null
+          language_id?: string | null
         }
         Update: {
           id?: string
@@ -153,6 +198,12 @@ export interface Database {
           status?: string
           created_at?: string
           updated_at?: string
+          views?: number | null
+          country_id?: string | null
+          city_id?: string | null
+          university_id?: string | null
+          currency_id?: string | null
+          language_id?: string | null
         }
       }
       accommodation_images: {
@@ -439,12 +490,190 @@ export interface Database {
           updated_at?: string
         }
       }
+      countries: {
+        Row: {
+          id: string
+          name: string
+          code: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          code: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          code?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      cities: {
+        Row: {
+          id: string
+          name: string
+          country_id: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          country_id: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          country_id?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      universities: {
+        Row: {
+          id: string
+          name: string
+          city_id: string
+          country_id: string
+          website: string | null
+          logo_url: string | null
+          is_verified: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          city_id: string
+          country_id: string
+          website?: string | null
+          logo_url?: string | null
+          is_verified?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          city_id?: string
+          country_id?: string
+          website?: string | null
+          logo_url?: string | null
+          is_verified?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      currencies: {
+        Row: {
+          id: string
+          name: string
+          code: string
+          symbol: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          code: string
+          symbol: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          code?: string
+          symbol?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      languages: {
+        Row: {
+          id: string
+          name: string
+          code: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          code: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          code?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      // Add other tables as needed
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      search_marketplace_listings: {
+        Args: {
+          search_query: string
+        }
+        Returns: {
+          id: string
+          title: string
+          description: string | null
+          price: number
+          condition: string
+          category: string
+          location: string
+          user_id: string
+          status: string
+          created_at: string
+          updated_at: string
+          country_id: string | null
+          city_id: string | null
+          university_id: string | null
+          currency_id: string | null
+          language_id: string | null
+        }[]
+      }
+      search_accommodation_listings: {
+        Args: {
+          search_query: string
+        }
+        Returns: {
+          id: string
+          title: string
+          description: string | null
+          price: number
+          type: string
+          location: string
+          user_id: string
+          is_verified: boolean
+          availability_date: string | null
+          status: string
+          created_at: string
+          updated_at: string
+          views: number | null
+          country_id: string | null
+          city_id: string | null
+          university_id: string | null
+          currency_id: string | null
+          language_id: string | null
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

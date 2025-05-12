@@ -1,38 +1,41 @@
-import Link from "next/link";
-import {
-  Facebook,
-  Instagram,
-  X,
-  Mail,
-  Phone,
-  MapPin,
-  Package,
-  Linkedin,
-} from "lucide-react";
-import { FaWhatsappSquare } from "react-icons/fa";
+import Link from "next/link"
+import { Facebook, Instagram, Linkedin, Twitter, Mail, Phone, MapPin } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { LogoWithText } from "@/components/logo"
 
 export default function Footer() {
-  const currentYear = new Date().getFullYear();
+  const currentYear = new Date().getFullYear()
 
   return (
     <footer className="bg-gradient-to-b from-muted/30 to-muted/50 relative overflow-hidden">
       {/* Background elements */}
       <div className="absolute inset-0 opacity-[0.02] bg-[radial-gradient(#000000_1px,transparent_1px)] [background-size:20px_20px] z-0" />
 
+      {/* Newsletter Section */}
       <div className="container px-4 mx-auto py-12 relative z-10">
+        <div className="bg-primary/5 rounded-2xl p-8 mb-12 border border-primary/10 shadow-sm">
+          <div className="max-w-3xl mx-auto text-center">
+            <h3 className="text-2xl font-bold mb-3">Stay Updated</h3>
+            <p className="text-muted-foreground mb-6">
+              Subscribe to our newsletter for the latest campus deals and housing opportunities.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+              <Input type="email" placeholder="Enter your email" className="flex-1" />
+              <Button>Subscribe</Button>
+            </div>
+          </div>
+        </div>
+
         <div className="grid gap-8 md:grid-cols-4">
           <div className="animate-fade-in">
-            <Link href="/" className="flex items-center gap-2">
-              <Package className="w-6 h-6 text-primary" />
-              <span className="text-xl font-bold">Campus Market</span>
-            </Link>
+            <LogoWithText size="md" className="mb-4" />
             <p className="text-muted-foreground mb-4">
-              The ultimate platform for students to buy, sell, and find
-              accommodation with ease and confidence.
+              The ultimate platform for students to buy, sell, and find accommodation with ease and confidence.
             </p>
             <div className="flex gap-4 mt-4">
               {[
-                { icon: X, label: "Twitter" },
+                { icon: Twitter, label: "Twitter" },
                 { icon: Facebook, label: "Facebook" },
                 { icon: Instagram, label: "Instagram" },
                 { icon: Linkedin, label: "LinkedIn" },
@@ -100,33 +103,21 @@ export default function Footer() {
             <ul className="space-y-4">
               <li className="flex items-start gap-3">
                 <MapPin className="w-5 h-5 text-primary mt-0.5" />
-                <span className="text-muted-foreground">Harare, Zimbabwe</span>
+                <span className="text-muted-foreground">123 University Ave, Campus District, CA 90210</span>
               </li>
               <li className="flex items-center gap-3">
                 <Mail className="w-5 h-5 text-primary" />
                 <a
-                  href="mailto:support@campusmarket.co.zw"
+                  href="mailto:support@campusmarket.com"
                   className="text-muted-foreground hover:text-primary transition-colors"
                 >
-                  support@campusmarket.co.zw
+                  support@campusmarket.com
                 </a>
               </li>
               <li className="flex items-center gap-3">
                 <Phone className="w-5 h-5 text-primary" />
-                <a
-                  href="tel:+263786223289"
-                  className="text-muted-foreground hover:text-primary transition-colors"
-                >
-                  +263 786 223 289
-                </a>
-              </li>
-              <li className="flex items-center gap-3">
-                <FaWhatsappSquare className="w-5 h-5 text-primary" />
-                <a
-                  href="https://wa.me/263786223289"
-                  className="text-muted-foreground hover:text-primary transition-colors"
-                >
-                  +263 786 223 289
+                <a href="tel:+1234567890" className="text-muted-foreground hover:text-primary transition-colors">
+                  (123) 456-7890
                 </a>
               </li>
             </ul>
@@ -135,16 +126,9 @@ export default function Footer() {
 
         <div className="pt-8 mt-8 border-t">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-muted-foreground text-sm">
-              © {currentYear} Campus Market. All rights reserved.
-            </p>
+            <p className="text-muted-foreground text-sm">© {currentYear} Campus Market. All rights reserved.</p>
             <div className="flex gap-6">
-              {[
-                "Privacy Policy",
-                "Terms of Service",
-                "Cookie Policy",
-                "Accessibility",
-              ].map((link) => (
+              {["Privacy Policy", "Terms of Service", "Cookie Policy", "Accessibility"].map((link) => (
                 <Link
                   key={link}
                   href="#"
@@ -158,5 +142,5 @@ export default function Footer() {
         </div>
       </div>
     </footer>
-  );
+  )
 }

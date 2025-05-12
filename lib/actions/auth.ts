@@ -8,7 +8,8 @@ export async function signUp(formData: FormData) {
   const email = formData.get("email") as string
   const password = formData.get("password") as string
   const fullName = formData.get("fullName") as string
-  const university = formData.get("university") as string
+  const countryId = formData.get("countryId") as string
+  const languageId = formData.get("languageId") as string
 
   const supabase = createServerClient()
 
@@ -19,7 +20,6 @@ export async function signUp(formData: FormData) {
       emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
       data: {
         full_name: fullName,
-        university: university,
       },
     },
   })
@@ -33,9 +33,11 @@ export async function signUp(formData: FormData) {
     const { error: profileError } = await supabase.from("profiles").insert({
       id: data.user.id,
       full_name: fullName,
-      university,
+      country_id: countryId || null,
+      preferred_language_id: languageId || null,
       role: "student", // Default role
       is_verified: false, // Needs verification
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     })
 
     if (profileError) {
@@ -110,9 +112,16 @@ export async function updateUserProfile(formData: FormData) {
 
   const fullName = formData.get("fullName") as string
   const username = formData.get("username") as string
-  const university = formData.get("university") as string
   const phone = formData.get("phone") as string
   const avatarFile = formData.get("avatar") as File
+
+  // New fields
+  const countryId = formData.get("countryId") as string
+  const cityId = formData.get("cityId") as string
+  const universityId = formData.get("universityId") as string
+  const currencyId = formData.get("currencyId") as string
+  const languageId = formData.get("languageId") as string
+  const timezone = formData.get("timezone") as string
 
   let avatarUrl = null
 
@@ -135,7 +144,6 @@ export async function updateUserProfile(formData: FormData) {
   const updateData: any = {
     full_name: fullName,
     username,
-    university,
     phone,
     updated_at: new Date().toISOString(),
   }
@@ -143,6 +151,14 @@ export async function updateUserProfile(formData: FormData) {
   if (avatarUrl) {
     updateData.avatar_url = avatarUrl
   }
+
+  // Add new fields if they exist
+  if (countryId) updateData.country_id = countryId
+  if (cityId) updateData.city_id = cityId
+  if (universityId) updateData.university_id = universityId
+  if (currencyId) updateData.preferred_currency_id = currencyId
+  if (languageId) updateData.preferred_language_id = languageId
+  if (timezone) updateData.timezone = timezone
 
   const { error } = await supabase.from("profiles").update(updateData).eq("id", session.user.id)
 
@@ -166,6 +182,7 @@ export async function verifyStudent(formData: FormData) {
   }
 
   const studentId = formData.get("studentId") as string
+  const universityId = formData.get("universityId") as string
   const verificationFile = formData.get("verificationDocument") as File
 
   if (!verificationFile || verificationFile.size === 0) {
@@ -192,6 +209,7 @@ export async function verifyStudent(formData: FormData) {
     .from("profiles")
     .update({
       student_id: studentId,
+      university_id: universityId || null,
       verification_document: verificationDocUrl,
       updated_at: new Date().toISOString(),
     })

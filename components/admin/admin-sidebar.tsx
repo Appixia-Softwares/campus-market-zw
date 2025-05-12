@@ -14,9 +14,9 @@ import {
   MessageSquare,
   AlertTriangle,
   LogOut,
+  Globe,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import AdminNotifications from "@/components/admin/admin-notifications"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -32,6 +32,7 @@ const links = [
   { name: "Reports", href: "/admin/reports", icon: AlertTriangle },
   { name: "Analytics", href: "/admin/analytics", icon: BarChart3 },
   { name: "Seed Data", href: "/admin/seed", icon: Database },
+  { name: "Seed Global Data", href: "/admin/seed-global", icon: Globe },
   { name: "Settings", href: "/admin/settings", icon: Settings },
 ]
 
@@ -50,7 +51,6 @@ export default function AdminSidebar() {
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold">Admin Panel</h2>
-          <AdminNotifications />
         </div>
         <nav className="space-y-2">
           {links.map((link) => {
