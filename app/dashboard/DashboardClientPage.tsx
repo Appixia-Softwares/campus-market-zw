@@ -119,7 +119,7 @@ export default function DashboardClientPage() {
         messages: messagesCount || 0,
         notifications: notificationsCount || 0,
         totalViews: totalAccommodationViews + totalProductViews,
-        totalLikes: productLikes.count || 0,
+        totalLikes: productLikes?.length || 0,
       })
     } catch (error) {
       console.error("Error fetching user stats:", error)

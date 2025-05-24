@@ -1,8 +1,8 @@
 import type { Metadata } from "next"
 import { Card } from "@/components/ui/card"
 import ConversationList from "@/components/messaging/conversation-list"
-import MessageThread from "@/components/messaging/message-thread"
 import { supabase } from "@/lib/supabase"
+import { MessageThread } from "@/components/messaging/message-thread"
 
 export const metadata: Metadata = {
   title: "Messages | ZimStudentHub",
