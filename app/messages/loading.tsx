@@ -1,3 +1,5 @@
-export default function Loading() {
-  return null
+import { MessagesLoading } from "../loading"
+
+export default function MessagesPageLoading() {
+  return <MessagesLoading />
 }

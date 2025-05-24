@@ -1,92 +1,73 @@
 import { createClient } from "@supabase/supabase-js"
 import type { Database } from "./database.types"
-import { env, validateEnv } from "./env"
 
-// Create Supabase client with proper configuration
-export const supabase = createClient<Database>(
-  env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
-  {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true,
-      flowType: "pkce",
-    },
-    realtime: {
-      params: {
-        eventsPerSecond: 10,
-      },
-    },
-    global: {
-      headers: {
-        "X-Client-Info": "campus-market-zw",
-      },
-    },
-  }
-)
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
-// Add ensureEnv function with better error handling
-export function ensureEnv() {
-  try {
-    return validateEnv();
-  } catch (error) {
-    console.warn('Environment validation failed:', error);
-    // In development, we'll continue even if validation fails
-    if (process.env.NODE_ENV === 'development') {
-      return true;
-    }
-    throw error;
-  }
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error("Missing Supabase environment variables")
 }
 
-// Test connection function with better error handling
-export async function testConnection(timeout = 5000): Promise<{ success: boolean; error?: string }> {
-  try {
-    ensureEnv();
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), timeout)
+// Single client instance for browser with default configuration
+let clientInstance: ReturnType<typeof createClient<Database>> | null = null
 
-    const { data, error } = await supabase.from("users").select("count").limit(1).abortSignal(controller.signal)
+export const supabase = (() => {
+  if (!clientInstance) {
+    clientInstance = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      },
+      global: {
+        headers: {
+          "X-Client-Info": "campusmarket-web",
+        },
+      },
+      db: {
+        schema: "public",
+      },
+    })
+    console.log("✅ Created Supabase client")
+  }
+  return clientInstance
+})()
 
-    clearTimeout(timeoutId)
+// Enhanced connection test with retry logic
+export async function testConnection(retries = 3): Promise<{ success: boolean; error?: string }> {
+  for (let i = 0; i < retries; i++) {
+    try {
+      // Test with a simple auth check first
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
 
-    if (error) {
-      console.error("Supabase connection test failed:", error)
-      return { success: false, error: error.message }
-    }
+      if (sessionError && sessionError.message !== "Auth session missing!") {
+        if (i === retries - 1) {
+          return { success: false, error: sessionError.message }
+        }
+        continue
+      }
 
-    return { success: true }
-  } catch (error: any) {
-    console.error("Supabase connection test error:", error)
-    return {
-      success: false,
-      error: error.name === "AbortError" ? "Connection timeout" : error.message,
+      // If auth works, test database connection
+      const { data: testData, error: dbError } = await supabase.from("users").select("count").limit(1).maybeSingle()
+
+      if (dbError) {
+        if (i === retries - 1) {
+          return { success: false, error: dbError.message }
+        }
+        continue
+      }
+
+      return { success: true }
+    } catch (error: any) {
+      if (i === retries - 1) {
+        return { success: false, error: error.message || "Network error" }
+      }
+      // Wait before retry
+      await new Promise((resolve) => setTimeout(resolve, 1000 * (i + 1)))
     }
   }
-}
 
-// Health check function with better error handling
-export async function healthCheck() {
-  try {
-    ensureEnv();
-    const { data, error } = await supabase.from("users").select("count").limit(1)
-
-    return {
-      database: !error,
-      auth: !!supabase.auth,
-      realtime: !!supabase.realtime,
-      timestamp: new Date().toISOString(),
-    }
-  } catch (error) {
-    return {
-      database: false,
-      auth: false,
-      realtime: false,
-      timestamp: new Date().toISOString(),
-      error: error instanceof Error ? error.message : "Unknown error",
-    }
-  }
+  return { success: false, error: "Max retries exceeded" }
 }
 
 export default supabase

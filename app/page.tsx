@@ -1,10 +1,9 @@
 "use client"
-
 import { useEffect, useState } from "react"
-import { ArrowRight, BookOpen, Home, MessageCircle, ShoppingBag } from "lucide-react"
+import { ArrowRight, BookOpen, MessageCircle, ShoppingBag } from "lucide-react"
 import Link from "next/link"
-import HeroSection from "@/components/hero-section"
 import FeatureCard from "@/components/feature-card"
+import HeroSection from "@/components/hero-section"
 import HowItWorks from "@/components/how-it-works"
 import VerificationSection from "@/components/verification-section"
 import PwaFeatures from "@/components/pwa-features"
@@ -16,7 +15,6 @@ import { supabase } from "@/lib/supabase"
 
 interface Stats {
   totalProducts: number
-  totalAccommodations: number
   totalUsers: number
   totalUniversities: number
 }
@@ -24,7 +22,6 @@ interface Stats {
 export default function LandingPage() {
   const [stats, setStats] = useState<Stats>({
     totalProducts: 0,
-    totalAccommodations: 0,
     totalUsers: 0,
     totalUniversities: 0,
   })
@@ -33,21 +30,14 @@ export default function LandingPage() {
     const fetchStats = async () => {
       try {
         // Fetch statistics from database
-        const [
-          { count: productsCount },
-          { count: accommodationsCount },
-          { count: usersCount },
-          { count: universitiesCount },
-        ] = await Promise.all([
+        const [{ count: productsCount }, { count: usersCount }, { count: universitiesCount }] = await Promise.all([
           supabase.from("products").select("*", { count: "exact", head: true }),
-          supabase.from("accommodations").select("*", { count: "exact", head: true }),
           supabase.from("users").select("*", { count: "exact", head: true }),
           supabase.from("universities").select("*", { count: "exact", head: true }),
         ])
 
         setStats({
           totalProducts: productsCount || 0,
-          totalAccommodations: accommodationsCount || 0,
           totalUsers: usersCount || 0,
           totalUniversities: universitiesCount || 0,
         })
@@ -93,14 +83,14 @@ export default function LandingPage() {
         {/* Hero Section */}
         <HeroSection stats={stats} />
 
-        {/* Product & Accommodation Showcase */}
+        {/* Product Showcase */}
         <section className="container py-12 md:py-24">
           <div className="mx-auto flex max-w-[58rem] flex-col items-center justify-center gap-4 text-center">
             <h2 className="text-3xl font-bold leading-[1.1] sm:text-3xl md:text-5xl">
               <span className="text-gradient">Everything Students Need</span>
             </h2>
             <p className="max-w-[85%] leading-normal text-muted-foreground sm:text-lg sm:leading-7">
-              From textbooks to tech gadgets, cozy rooms to affordable apartments - all in one place.
+              From textbooks to tech gadgets, all in one marketplace designed for students.
             </p>
           </div>
 
@@ -127,14 +117,14 @@ export default function LandingPage() {
               description={`Buy and sell textbooks, electronics, clothing, and more directly from other students. ${stats.totalProducts}+ items available.`}
             />
             <FeatureCard
-              icon={<Home className="h-10 w-10" />}
-              title="Accommodation Finder"
-              description={`Find verified off-campus rooms, flats, and houses near your university. ${stats.totalAccommodations}+ listings available.`}
-            />
-            <FeatureCard
               icon={<MessageCircle className="h-10 w-10" />}
               title="In-App Messaging"
-              description="Chat directly with sellers and landlords to negotiate and arrange meetups."
+              description="Chat directly with sellers to negotiate and arrange meetups safely."
+            />
+            <FeatureCard
+              icon={<BookOpen className="h-10 w-10" />}
+              title="University Network"
+              description={`Connect with students from ${stats.totalUniversities} universities across Zimbabwe.`}
             />
           </div>
         </section>
@@ -174,7 +164,7 @@ export default function LandingPage() {
             </h2>
             <p className="max-w-[85%] text-lg text-muted-foreground">
               Join {stats.totalUsers}+ students from {stats.totalUniversities} universities and start exploring the
-              marketplace or find your perfect accommodation.
+              marketplace.
             </p>
             <div className="flex flex-col gap-4 sm:flex-row">
               <Link href="/signup">
@@ -203,7 +193,9 @@ export default function LandingPage() {
               <BookOpen className="h-5 w-5 text-green-600 dark:text-green-400" />
               <span className="text-lg font-semibold">Campus Marketplace</span>
             </div>
-            <p className="text-sm text-muted-foreground">The ultimate platform for Zimbabwean university students.</p>
+            <p className="text-sm text-muted-foreground">
+              The ultimate marketplace for Zimbabwean university students.
+            </p>
           </div>
           <div className="grid flex-1 grid-cols-2 gap-8 sm:grid-cols-3">
             <div className="flex flex-col gap-2">
@@ -215,14 +207,6 @@ export default function LandingPage() {
                     className="hover:text-green-600 dark:hover:text-green-400 transition-colors"
                   >
                     Marketplace
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/accommodation"
-                    className="hover:text-green-600 dark:hover:text-green-400 transition-colors"
-                  >
-                    Accommodation
                   </Link>
                 </li>
                 <li>
@@ -275,7 +259,7 @@ export default function LandingPage() {
           </div>
         </div>
         <div className="container border-t py-6 text-center text-sm text-muted-foreground relative z-10">
-          &copy; {new Date().getFullYear()} Campusmarketplace. All rights reserved.
+          &copy; {new Date().getFullYear()} Campus Marketplace. All rights reserved.
         </div>
       </footer>
     </div>

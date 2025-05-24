@@ -24,20 +24,20 @@ export function DashboardStats({ userId }: DashboardStatsProps) {
     async function fetchStats() {
       try {
         setLoading(true)
-        const [
-          { count: messageCount },
-          { count: savedAccommodationsCount },
-          { count: savedProductsCount },
-          { count: likedProductsCount },
-        ] = await Promise.all([
-          supabase
-            .from("messages")
-            .select("*", { count: "exact", head: true })
-            .or(`sender_id.eq.${userId},recipient_id.eq.${userId}`),
-          supabase.from("saved_accommodations").select("*", { count: "exact", head: true }).eq("user_id", userId),
-          supabase.from("saved_products").select("*", { count: "exact", head: true }).eq("user_id", userId),
-          supabase.from("product_likes").select("*", { count: "exact", head: true }).eq("user_id", userId),
-        ])
+  const [
+    { count: messageCount },
+    { count: savedAccommodationsCount },
+    { count: savedProductsCount },
+    { count: likedProductsCount },
+  ] = await Promise.all([
+    supabase
+      .from("messages")
+      .select("*", { count: "exact", head: true })
+      .or(`sender_id.eq.${userId},recipient_id.eq.${userId}`),
+    supabase.from("saved_accommodations").select("*", { count: "exact", head: true }).eq("user_id", userId),
+    supabase.from("saved_products").select("*", { count: "exact", head: true }).eq("user_id", userId),
+    supabase.from("product_likes").select("*", { count: "exact", head: true }).eq("user_id", userId),
+  ])
 
         setStats({
           messageCount: messageCount || 0,

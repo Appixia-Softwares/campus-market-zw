@@ -242,14 +242,14 @@ export function OnboardingModal() {
                       </SelectItem>
                     ) : (
                       universities.map((uni) => (
-                        <SelectItem key={uni.id} value={uni.id}>
-                          <div>
-                            <div className="font-medium">{uni.name}</div>
-                            <div className="text-sm text-muted-foreground">
+                      <SelectItem key={uni.id} value={uni.id}>
+                        <div>
+                          <div className="font-medium">{uni.name}</div>
+                          <div className="text-sm text-muted-foreground">
                               {uni.location}
-                            </div>
                           </div>
-                        </SelectItem>
+                        </div>
+                      </SelectItem>
                       ))
                     )}
                   </SelectContent>

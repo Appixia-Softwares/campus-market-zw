@@ -11,10 +11,10 @@ import { ProtectedRoute } from "@/components/protected-route"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "CampusMarket Zimbabwe - Student Marketplace",
+  title: "CampusMarket Zimbabwe - Student Marketplace & Accommodation",
   description:
-    "The premier marketplace for Zimbabwean students to buy and sell items across all universities. Connect with fellow students and find great deals on campus.",
-  keywords: "Zimbabwe, students, marketplace, university, campus, buy, sell, UZ, MSU, NUST, Midlands",
+    "Find student accommodation, buy and sell items, and connect with fellow students across Zimbabwe's universities.",
+  keywords: "student accommodation, marketplace, Zimbabwe, university, UZ, MSU, NUST, student housing",
     generator: 'v0.dev'
 }
 
@@ -29,7 +29,9 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <AuthProvider>
             <RealtimeProvider>
-              <ProtectedRoute>{children}</ProtectedRoute>
+              <ProtectedRoute>
+              {children}
+              </ProtectedRoute>
               <Toaster />
             </RealtimeProvider>
           </AuthProvider>

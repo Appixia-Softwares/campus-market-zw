@@ -1,53 +1,55 @@
-// Environment variables with fallbacks and type safety
+// Environment variables with defaults for development
 export const env = {
-  // Supabase Configuration
-  SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL ?? '',
-  SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '',
-  SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY ?? '',
-  SUPABASE_JWT_SECRET: process.env.SUPABASE_JWT_SECRET ?? '',
+  // Required Supabase variables
+  SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
 
-  // Application Configuration
-  NODE_ENV: process.env.NODE_ENV || "development",
-  VERCEL_URL: process.env.NEXT_PUBLIC_VERCEL_URL,
+  // Optional variables with defaults
+  VERCEL_URL: process.env.VERCEL_URL || process.env.NEXT_PUBLIC_VERCEL_URL || "http://localhost:3000",
+  NEXT_PUBLIC_VERCEL_URL: process.env.NEXT_PUBLIC_VERCEL_URL || "http://localhost:3000",
+  ENABLE_ANALYTICS: process.env.ENABLE_ANALYTICS === "true" || false,
+  ENABLE_NOTIFICATIONS: process.env.ENABLE_NOTIFICATIONS === "true" || false,
 
-  // Feature Flags
-  ENABLE_ANALYTICS: process.env.ENABLE_ANALYTICS === "true",
-  ENABLE_NOTIFICATIONS: process.env.ENABLE_NOTIFICATIONS === "true",
+  // App configuration
+  APP_NAME: "CampusMarket Zimbabwe",
+  APP_DESCRIPTION: "Student marketplace for Zimbabwe universities",
+
+  // Feature flags
+  FEATURES: {
+    analytics: process.env.ENABLE_ANALYTICS === "true",
+    notifications: process.env.ENABLE_NOTIFICATIONS === "true",
+    realtime: true,
+    messaging: true,
+  },
 } as const
 
 // Validate required environment variables
-const requiredEnvVars = ["NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY"] as const
-
 export function validateEnv() {
-  // Skip validation in development if we're in the browser
-  if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
-    return true;
+  const required = ["SUPABASE_URL", "SUPABASE_ANON_KEY"] as const
+
+  for (const key of required) {
+    if (!env[key]) {
+      throw new Error(`Missing required environment variable: ${key}`)
+    }
   }
 
-  const missing = requiredEnvVars.filter((key) => !process.env[key])
+  console.log("✅ Environment variables validated")
+  console.log("🔧 App configuration:", {
+    name: env.APP_NAME,
+    url: env.VERCEL_URL,
+    features: env.FEATURES,
+  })
+}
 
-  if (missing.length > 0) {
-    throw new Error(`Missing required environment variables: ${missing.join(", ")}`)
+// Call validation on import
+if (typeof window === "undefined") {
+  // Only validate on server side to avoid client-side errors
+  try {
+    if (!env.SUPABASE_URL || !env.SUPABASE_ANON_KEY) {
+      throw new Error("Missing required Supabase environment variables")
+    }
+    validateEnv()
+  } catch (error) {
+    console.error("❌ Environment validation failed:", error)
   }
-
-  return true;
 }
-
-// Helper to check if we're in production
-export const isProduction = env.NODE_ENV === "production"
-export const isDevelopment = env.NODE_ENV === "development"
-
-// Debug logging only in development
-if (isDevelopment) {
-  console.log("ENV DEBUG:", {
-    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
-    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-  });
-}
-
-// Supabase configuration object
-export const supabaseConfig = {
-  url: env.SUPABASE_URL,
-  anonKey: env.SUPABASE_ANON_KEY,
-  serviceRoleKey: env.SUPABASE_SERVICE_ROLE_KEY,
-} as const
