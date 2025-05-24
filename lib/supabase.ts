@@ -8,7 +8,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error("Missing Supabase environment variables")
 }
 
-// Single client instance for browser with better configuration
+// Single client instance for browser with default configuration
 let clientInstance: ReturnType<typeof createClient<Database>> | null = null
 
 export const supabase = (() => {
@@ -17,7 +17,7 @@ export const supabase = (() => {
       auth: {
         persistSession: true,
         autoRefreshToken: true,
-        detectSessionInUrl: true,
+        detectSessionInUrl: true
       },
       global: {
         headers: {
@@ -38,11 +38,11 @@ export async function testConnection(retries = 3): Promise<{ success: boolean; e
   for (let i = 0; i < retries; i++) {
     try {
       // Test with a simple auth check first
-      const { data, error } = await supabase.auth.getUser()
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
 
-      if (error && error.message !== "Auth session missing!") {
+      if (sessionError && sessionError.message !== "Auth session missing!") {
         if (i === retries - 1) {
-          return { success: false, error: error.message }
+          return { success: false, error: sessionError.message }
         }
         continue
       }

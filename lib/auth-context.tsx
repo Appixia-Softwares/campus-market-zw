@@ -311,6 +311,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const getInitialUser = async () => {
       try {
         setConnectionError(null)
+        setLoading(true)
 
         // Get initial session immediately
         const {
@@ -327,7 +328,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (!mounted) return
 
-        if (sessionError || !session?.user) {
+        if (sessionError) {
+          console.error("Session error:", sessionError)
+          setLoading(false)
+          return
+        }
+
+        if (!session?.user) {
           setLoading(false)
           return
         }
@@ -378,19 +385,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const profileData = await fetchUserProfile(session.user.id, session.user)
           if (mounted) {
             setProfile(profileData)
+            setLoading(false)
           }
         }
-
-        if (mounted) {
-          setLoading(false)
-        }
       } catch (error: any) {
-        console.error("Error in auth state change:", error)
+        console.error("Error handling auth state change:", error)
         if (mounted) {
-          setConnectionError(error.message || "Auth state change failed")
-          setUser(null)
-          setProfile(null)
-          setSession(null)
+          setConnectionError(error.message || "Failed to handle auth state change")
           setLoading(false)
         }
       }

@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { AuthProvider } from "@/lib/auth-context"
 import { RealtimeProvider } from "@/lib/realtime-context"
 import { Toaster } from "@/components/ui/sonner"
+import { ProtectedRoute } from "@/components/protected-route"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -28,7 +29,9 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <AuthProvider>
             <RealtimeProvider>
-              {children}
+              <ProtectedRoute>
+                {children}
+              </ProtectedRoute>
               <Toaster />
             </RealtimeProvider>
           </AuthProvider>

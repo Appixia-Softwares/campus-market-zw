@@ -11,36 +11,52 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Progress } from "@/components/ui/progress"
 import { User, GraduationCap, Phone, FileText } from "lucide-react"
 import { toast } from "sonner"
+import { getUniversities } from "@/lib/api/auth"
 
-const ZIMBABWE_UNIVERSITIES = [
-  { id: "1", name: "University of Zimbabwe", abbreviation: "UZ", location: "Harare" },
-  { id: "2", name: "National University of Science and Technology", abbreviation: "NUST", location: "Bulawayo" },
-  { id: "3", name: "Midlands State University", abbreviation: "MSU", location: "Gweru" },
-  { id: "4", name: "Africa University", abbreviation: "AU", location: "Mutare" },
-  { id: "5", name: "Chinhoyi University of Technology", abbreviation: "CUT", location: "Chinhoyi" },
-  { id: "6", name: "Great Zimbabwe University", abbreviation: "GZU", location: "Masvingo" },
-  { id: "7", name: "Harare Institute of Technology", abbreviation: "HIT", location: "Harare" },
-  { id: "8", name: "Bindura University of Science Education", abbreviation: "BUSE", location: "Bindura" },
-  { id: "9", name: "Zimbabwe Open University", abbreviation: "ZOU", location: "Harare" },
-  { id: "10", name: "Lupane State University", abbreviation: "LSU", location: "Lupane" },
-  { id: "11", name: "Manicaland State University of Applied Sciences", abbreviation: "MSUAS", location: "Mutare" },
-  { id: "12", name: "Reformed Church University", abbreviation: "RCU", location: "Marondera" },
-  { id: "13", name: "Solusi University", abbreviation: "SU", location: "Bulawayo" },
-  { id: "14", name: "Women's University in Africa", abbreviation: "WUA", location: "Harare" },
-  { id: "15", name: "Zimbabwe Ezekiel Guti University", abbreviation: "ZEGU", location: "Bindura" },
-]
+interface University {
+  id: string
+  name: string
+  location: string
+}
 
 export function OnboardingModal() {
   const { user, profile, updateProfile } = useAuth()
   const [open, setOpen] = useState(false)
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
+  const [universities, setUniversities] = useState<University[]>([])
+  const [isLoadingUniversities, setIsLoadingUniversities] = useState(true)
 
   // Form data
   const [fullName, setFullName] = useState("")
   const [universityId, setUniversityId] = useState("")
   const [phoneNumber, setPhoneNumber] = useState("")
   const [bio, setBio] = useState("")
+
+  // Load universities from database
+  useEffect(() => {
+    async function loadUniversities() {
+      setIsLoadingUniversities(true)
+      try {
+        const { data, error } = await getUniversities()
+        if (error) {
+          console.error("Error loading universities:", error)
+          toast.error("Failed to load universities")
+          return
+        }
+        if (data) {
+          setUniversities(data)
+        }
+      } catch (err) {
+        console.error("Unexpected error loading universities:", err)
+        toast.error("Failed to load universities")
+      } finally {
+        setIsLoadingUniversities(false)
+      }
+    }
+
+    loadUniversities()
+  }, [])
 
   // Check if profile is incomplete
   const isProfileIncomplete = (profile: any) => {
@@ -111,6 +127,24 @@ export function OnboardingModal() {
       const cleanPhone = phoneNumber.replace(/\s/g, "")
       const fullPhoneNumber = `+263${cleanPhone}`
 
+      // Validate required fields
+      if (!fullName.trim()) {
+        toast.error("Please enter your full name")
+        return
+      }
+      if (!universityId) {
+        toast.error("Please select your university")
+        return
+      }
+      if (cleanPhone.length !== 9) {
+        toast.error("Please enter a valid phone number")
+        return
+      }
+      if (!bio.trim()) {
+        toast.error("Please tell us about yourself")
+        return
+      }
+
       await updateProfile({
         full_name: fullName.trim(),
         university_id: universityId,
@@ -121,9 +155,9 @@ export function OnboardingModal() {
 
       toast.success("Profile completed successfully! Welcome to CampusMarket Zimbabwe!")
       setOpen(false)
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error completing onboarding:", error)
-      toast.error("Failed to complete profile. Please try again.")
+      toast.error(error.message || "Failed to complete profile. Please try again.")
     } finally {
       setLoading(false)
     }
@@ -148,7 +182,7 @@ export function OnboardingModal() {
 
   return (
     <Dialog open={open} onOpenChange={() => {}}>
-      <DialogContent className="sm:max-w-md" hideClose>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <span className="text-2xl">🇿🇼</span>
@@ -202,16 +236,22 @@ export function OnboardingModal() {
                     <SelectValue placeholder="Select your university" />
                   </SelectTrigger>
                   <SelectContent>
-                    {ZIMBABWE_UNIVERSITIES.map((uni) => (
-                      <SelectItem key={uni.id} value={uni.id}>
-                        <div>
-                          <div className="font-medium">{uni.name}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {uni.abbreviation} • {uni.location}
-                          </div>
-                        </div>
+                    {isLoadingUniversities ? (
+                      <SelectItem value="loading" disabled>
+                        Loading universities...
                       </SelectItem>
-                    ))}
+                    ) : (
+                      universities.map((uni) => (
+                        <SelectItem key={uni.id} value={uni.id}>
+                          <div>
+                            <div className="font-medium">{uni.name}</div>
+                            <div className="text-sm text-muted-foreground">
+                              {uni.location}
+                            </div>
+                          </div>
+                        </SelectItem>
+                      ))
+                    )}
                   </SelectContent>
                 </Select>
               </div>
