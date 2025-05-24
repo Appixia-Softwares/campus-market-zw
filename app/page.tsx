@@ -32,7 +32,7 @@ export default function LandingPage() {
                 Log in
               </Button>
             </Link>
-            <Link href="/register">
+            <Link href="/signup">
               <Button size="sm" className="relative overflow-hidden group">
                 <span className="absolute inset-0 bg-gradient-to-r from-green-600 to-green-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
                 <span className="relative z-10">Sign up</span>

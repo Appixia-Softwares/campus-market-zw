@@ -27,13 +27,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<any | null>(null)
   const [loading, setLoading] = useState(true)
+  const [retryCount, setRetryCount] = useState(0)
+  const MAX_RETRIES = 3
 
   const refreshUser = async () => {
     try {
-      const { data } = await getCurrentUser()
+      const { data, error } = await getCurrentUser()
+      
+      if (error) {
+        throw error
+      }
+
       if (data) {
         setUser(data.user)
         setProfile(data.profile)
+        setRetryCount(0) // Reset retry count on success
       } else {
         setUser(null)
         setProfile(null)
@@ -42,15 +50,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error("Error refreshing user:", error)
       setUser(null)
       setProfile(null)
+
+      // Retry logic
+      if (retryCount < MAX_RETRIES) {
+        setRetryCount(prev => prev + 1)
+        setTimeout(refreshUser, 1000 * retryCount)
+      }
     } finally {
       setLoading(false)
     }
   }
 
   const signOut = async () => {
-    await supabase.auth.signOut()
-    setUser(null)
-    setProfile(null)
+    try {
+      await supabase.auth.signOut()
+      setUser(null)
+      setProfile(null)
+    } catch (error) {
+      console.error("Error signing out:", error)
+    }
   }
 
   useEffect(() => {
