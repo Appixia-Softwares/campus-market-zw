@@ -3,7 +3,7 @@
 import { motion } from "framer-motion"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { ShoppingBag, Home, ArrowRight } from "lucide-react"
+import { ShoppingBag, ArrowRight } from "lucide-react"
 
 interface Stats {
   totalProducts: number
@@ -62,12 +62,6 @@ export default function HeroSection({ stats }: HeroSectionProps) {
                   <ShoppingBag className="h-4 w-4 relative z-10" />
                   <span className="relative z-10">Browse Marketplace</span>
                   <ArrowRight className="h-4 w-4 ml-1 relative z-10 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300" />
-                </Button>
-              </Link>
-              <Link href="/accommodation">
-                <Button variant="outline" size="lg" className="gap-2 gradient-border">
-                  <Home className="h-4 w-4" />
-                  <span>View Rooms</span>
                 </Button>
               </Link>
             </motion.div>
