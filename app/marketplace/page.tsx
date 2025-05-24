@@ -118,6 +118,18 @@ export default function MarketplacePage() {
 
   return (
     <div className="container py-8 space-y-8">
+      <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg p-4 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="px-2 py-1 bg-white/20 rounded text-sm font-medium">BETA</span>
+          <p className="text-sm">Welcome to the beta version of Campus Market! Help us improve by reporting any issues.</p>
+        </div>
+        <Button variant="secondary" size="sm" asChild>
+          <Link href="/feedback">
+            Give Feedback
+          </Link>
+        </Button>
+      </div>
+
       <div className="flex items-center justify-between">
         <div className="space-y-1">
           <h1 className="text-3xl font-bold">Marketplace</h1>
