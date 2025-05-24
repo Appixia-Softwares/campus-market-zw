@@ -16,4 +16,4 @@ TO authenticated, anon
 USING (true);
 
 -- Grant necessary permissions
-GRANT INSERT, SELECT ON public.page_views TO authenticated, anon; 
+GRANT INSERT, SELECT ON public.page_views TO authenticated, anon;

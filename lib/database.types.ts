@@ -8,11 +8,15 @@ export interface Database {
           id: string
           full_name: string
           email: string
+          phone?: string
           university_id: string | null
           role: "user" | "admin"
           status: "active" | "pending" | "inactive"
           verified: boolean
+          email_verified: boolean
+          phone_verified: boolean
           avatar_url: string | null
+          bio?: string
           created_at: string
           updated_at: string
         }
@@ -20,11 +24,15 @@ export interface Database {
           id: string
           full_name: string
           email: string
+          phone?: string
           university_id?: string | null
           role?: "user" | "admin"
           status?: "active" | "pending" | "inactive"
           verified?: boolean
+          email_verified?: boolean
+          phone_verified?: boolean
           avatar_url?: string | null
+          bio?: string
           created_at?: string
           updated_at?: string
         }
@@ -32,11 +40,15 @@ export interface Database {
           id?: string
           full_name?: string
           email?: string
+          phone?: string
           university_id?: string | null
           role?: "user" | "admin"
           status?: "active" | "pending" | "inactive"
           verified?: boolean
+          email_verified?: boolean
+          phone_verified?: boolean
           avatar_url?: string | null
+          bio?: string
           created_at?: string
           updated_at?: string
         }

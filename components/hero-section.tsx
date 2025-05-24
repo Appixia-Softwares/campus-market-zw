@@ -5,7 +5,18 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ShoppingBag, Home, ArrowRight } from "lucide-react"
 
-export default function HeroSection() {
+interface Stats {
+  totalProducts: number
+  totalAccommodations: number
+  totalUsers: number
+  totalUniversities: number
+}
+
+interface HeroSectionProps {
+  stats?: Stats
+}
+
+export default function HeroSection({ stats }: HeroSectionProps) {
   return (
     <section className="relative overflow-hidden hero-gradient pt-16 md:pt-24">
       <div className="container relative z-10">
@@ -67,7 +78,10 @@ export default function HeroSection() {
               transition={{ duration: 0.5, delay: 0.3 }}
             >
               <span className="inline-block rounded-full bg-green-500 h-2 w-2 animate-pulse-glow"></span>
-              <span>Trusted by 5,000+ students across Zimbabwe</span>
+              <span>
+                Trusted by {stats?.totalUsers || 5000}+ students across {stats?.totalUniversities || 8} universities in
+                Zimbabwe
+              </span>
             </motion.div>
           </div>
           <motion.div
@@ -80,7 +94,7 @@ export default function HeroSection() {
               <div className="absolute inset-0 bg-gradient-to-tr from-green-500/20 to-background/60 z-10 rounded-lg"></div>
               <img
                 src="/placeholder.svg?height=450&width=500"
-                alt="Students using ZimStudentHub"
+                alt="Students using Campus Marketplace"
                 className="h-full w-full object-cover"
               />
 

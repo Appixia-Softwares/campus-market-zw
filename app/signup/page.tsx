@@ -33,23 +33,23 @@ const STEPS: Step[] = [
   {
     id: 1,
     title: "Personal Information",
-    description: "Tell us about yourself"
+    description: "Tell us about yourself",
   },
   {
     id: 2,
     title: "University",
-    description: "Select your university"
+    description: "Select your university",
   },
   {
     id: 3,
     title: "Security",
-    description: "Set up your password"
+    description: "Set up your password",
   },
   {
     id: 4,
     title: "Terms",
-    description: "Review and accept terms"
-  }
+    description: "Review and accept terms",
+  },
 ]
 
 interface SignUpError {
@@ -80,25 +80,25 @@ export default function SignupPage() {
 
   useEffect(() => {
     async function loadUniversities() {
-      console.log('Debug - Starting to load universities')
+      console.log("Debug - Starting to load universities")
       setIsLoadingUniversities(true)
       try {
         const { data, error } = await getUniversities()
-        console.log('Debug - Universities response:', { data, error })
-        
+        console.log("Debug - Universities response:", { data, error })
+
         if (error) {
-          console.error('Debug - Error loading universities:', error)
+          console.error("Debug - Error loading universities:", error)
           return
         }
-        
+
         if (data) {
-          console.log('Debug - Setting universities:', data.length)
+          console.log("Debug - Setting universities:", data.length)
           setUniversities(data)
         } else {
-          console.log('Debug - No universities data received')
+          console.log("Debug - No universities data received")
         }
       } catch (err) {
-        console.error('Debug - Unexpected error loading universities:', err)
+        console.error("Debug - Unexpected error loading universities:", err)
       } finally {
         setIsLoadingUniversities(false)
       }
@@ -142,24 +142,24 @@ export default function SignupPage() {
     }
 
     try {
-      console.log('Debug - Starting signup process')
+      console.log("Debug - Starting signup process")
       const { data, error: signUpError } = await signUp(formData.email, formData.password, {
         full_name: formData.fullName,
         university_id: formData.university || undefined,
       })
 
       if (signUpError) {
-        console.error('Debug - Signup error:', signUpError)
+        console.error("Debug - Signup error:", signUpError)
         setError(signUpError.message)
         return
       }
 
-      console.log('Debug - Signup successful, attempting sign in')
+      console.log("Debug - Signup successful, attempting sign in")
       // Sign in the user after successful signup
       const { data: signInData, error: signInError } = await signIn(formData.email, formData.password)
-      
+
       if (signInError) {
-        console.error('Debug - Sign in error:', signInError)
+        console.error("Debug - Sign in error:", signInError)
         toast({
           title: "Account created!",
           description: "Please check your email to confirm your account.",
@@ -169,14 +169,16 @@ export default function SignupPage() {
         return
       }
 
-      console.log('Debug - Sign in successful, waiting for session')
+      console.log("Debug - Sign in successful, waiting for session")
       // Wait for session to be set
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      await new Promise((resolve) => setTimeout(resolve, 2000))
 
       // Verify session is set
-      const { data: { session } } = await supabase.auth.getSession()
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
       if (!session) {
-        console.error('Debug - No session found after sign in')
+        console.error("Debug - No session found after sign in")
         toast({
           title: "Account created!",
           description: "Please sign in to continue.",
@@ -186,7 +188,7 @@ export default function SignupPage() {
         return
       }
 
-      console.log('Debug - Session verified, redirecting to dashboard')
+      console.log("Debug - Session verified, redirecting to dashboard")
       toast({
         title: "Account created!",
         description: "Welcome to Campus Marketplace!",
@@ -195,10 +197,10 @@ export default function SignupPage() {
 
       // Redirect to dashboard or the original destination
       const searchParams = new URLSearchParams(window.location.search)
-      const redirectTo = searchParams.get('redirectTo') || '/dashboard'
+      const redirectTo = searchParams.get("redirectTo") || "/dashboard"
       router.push(redirectTo)
     } catch (err: any) {
-      console.error('Debug - Unexpected error:', err)
+      console.error("Debug - Unexpected error:", err)
       setError(err.message || "Failed to create account. Please try again.")
     } finally {
       setIsLoading(false)
@@ -257,7 +259,9 @@ export default function SignupPage() {
                 disabled={isLoading || isLoadingUniversities}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder={isLoadingUniversities ? "Loading universities..." : "Select your university"} />
+                  <SelectValue
+                    placeholder={isLoadingUniversities ? "Loading universities..." : "Select your university"}
+                  />
                 </SelectTrigger>
                 <SelectContent>
                   {universities.map((university) => (
@@ -410,12 +414,7 @@ export default function SignupPage() {
                     </Button>
                   )}
                   {currentStep < STEPS.length ? (
-                    <Button
-                      type="button"
-                      onClick={nextStep}
-                      disabled={isLoading}
-                      className="ml-auto flex items-center"
-                    >
+                    <Button type="button" onClick={nextStep} disabled={isLoading} className="ml-auto flex items-center">
                       Next
                       <ChevronRight className="ml-2 h-4 w-4" />
                     </Button>

@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Bell, Building, Calendar, HelpCircle, MessageSquare, Search } from "lucide-react"
+import { Bell, Building, Calendar, HelpCircle, MessageSquare, Search, User } from "lucide-react"
 import Link from "next/link"
 import { ModeToggle } from "@/components/mode-toggle"
 import {
@@ -13,10 +13,61 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
 import { useState } from "react"
+import { useAuth } from "@/lib/auth-context"
 
 export default function DashboardHeader() {
   const [searchFocused, setSearchFocused] = useState(false)
+  const { user, profile, signOut } = useAuth()
+
+  // Generate initials from full name
+  const getInitials = (fullName: string) => {
+    return fullName
+      .split(" ")
+      .map((name) => name.charAt(0).toUpperCase())
+      .slice(0, 2)
+      .join("")
+  }
+
+  // Get display name
+  const getDisplayName = () => {
+    if (profile?.full_name) {
+      return profile.full_name
+    }
+    if (user?.user_metadata?.full_name) {
+      return user.user_metadata.full_name
+    }
+    if (user?.email) {
+      return user.email.split("@")[0]
+    }
+    return "User"
+  }
+
+  // Get user initials
+  const getUserInitials = () => {
+    const displayName = getDisplayName()
+    return getInitials(displayName)
+  }
+
+  // Get user status badge
+  const getStatusBadge = () => {
+    if (!profile) return null
+
+    const statusColors = {
+      active: "bg-green-500",
+      pending: "bg-yellow-500",
+      inactive: "bg-gray-500",
+      suspended: "bg-red-500",
+    }
+
+    return (
+      <Badge variant="outline" className={`text-xs ${statusColors[profile.status]} text-white border-none`}>
+        {profile.status}
+      </Badge>
+    )
+  }
 
   return (
     <header className="border-b sticky top-0 z-10 bg-background/80 backdrop-blur-md">
@@ -24,7 +75,7 @@ export default function DashboardHeader() {
         <div className="flex items-center gap-2">
           <Link href="/" className="flex items-center gap-2">
             <Building className="h-6 w-6 text-primary" />
-            <span className="font-bold text-xl">Agripa</span>
+            <span className="font-bold text-xl">CampusMarket 🇿🇼</span>
           </Link>
         </div>
 
@@ -36,7 +87,7 @@ export default function DashboardHeader() {
           ></div>
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search for accommodation, marketplace items..."
+            placeholder="Search accommodation, marketplace items..."
             className="pl-8 bg-muted border-none focus-visible:ring-primary/20 focus-visible:ring-offset-0"
             onFocus={() => setSearchFocused(true)}
             onBlur={() => setSearchFocused(false)}
@@ -61,6 +112,7 @@ export default function DashboardHeader() {
                 className="relative notification-badge hover:bg-primary/10 transition-colors"
               >
                 <Bell className="h-5 w-5" />
+                <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full"></span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-80">
@@ -92,26 +144,61 @@ export default function DashboardHeader() {
             <DropdownMenuTrigger asChild>
               <Button
                 variant="outline"
-                size="icon"
-                className="rounded-full border-2 p-0.5 transition-all duration-300 hover:border-primary"
+                className="flex items-center gap-2 h-10 px-3 rounded-full border-2 transition-all duration-300 hover:border-primary"
               >
-                <span className="sr-only">Profile</span>
-                <img
-                  src="/placeholder.svg?height=32&width=32"
-                  alt="Profile"
-                  className="rounded-full h-full w-full object-cover"
-                />
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={profile?.avatar_url || user?.user_metadata?.avatar_url} />
+                  <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
+                    {getUserInitials()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="hidden sm:flex flex-col items-start">
+                  <span className="text-sm font-medium">{getDisplayName()}</span>
+                  <div className="flex items-center gap-1">
+                    {profile?.university?.abbreviation && (
+                      <span className="text-xs text-muted-foreground">{profile.university.abbreviation}</span>
+                    )}
+                    {getStatusBadge()}
+                  </div>
+                </div>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>
+                <div className="flex flex-col space-y-1">
+                  <p className="text-sm font-medium leading-none">{getDisplayName()}</p>
+                  <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
+                  {profile?.university && (
+                    <p className="text-xs leading-none text-muted-foreground">{profile.university.name}</p>
+                  )}
+                </div>
+              </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Profile</DropdownMenuItem>
-              <DropdownMenuItem>Settings</DropdownMenuItem>
-              <DropdownMenuItem>Bookings</DropdownMenuItem>
-              <DropdownMenuItem>Payments</DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/profile" className="cursor-pointer">
+                  <User className="mr-2 h-4 w-4" />
+                  Profile
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/settings" className="cursor-pointer">
+                  Settings
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/bookings" className="cursor-pointer">
+                  My Bookings
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/payments" className="cursor-pointer">
+                  Payments
+                </Link>
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-destructive">Logout</DropdownMenuItem>
+              <DropdownMenuItem className="text-destructive cursor-pointer" onClick={() => signOut()}>
+                Logout
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

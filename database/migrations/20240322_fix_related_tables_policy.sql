@@ -45,4 +45,4 @@ GRANT SELECT ON product_categories TO authenticated, anon;
 GRANT SELECT ON product_images TO authenticated, anon;
 GRANT SELECT ON accommodation_types TO authenticated, anon;
 GRANT SELECT ON accommodation_images TO authenticated, anon;
-GRANT SELECT ON locations TO authenticated, anon; 
+GRANT SELECT ON locations TO authenticated, anon;

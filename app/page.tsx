@@ -1,3 +1,6 @@
+"use client"
+
+import { useEffect, useState } from "react"
 import { ArrowRight, BookOpen, Home, MessageCircle, ShoppingBag } from "lucide-react"
 import Link from "next/link"
 import HeroSection from "@/components/hero-section"
@@ -10,8 +13,53 @@ import ProductShowcase from "@/components/product-showcase"
 import AccommodationShowcase from "@/components/accommodation-showcase"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { supabase } from "@/lib/supabase"
+
+interface Stats {
+  totalProducts: number
+  totalAccommodations: number
+  totalUsers: number
+  totalUniversities: number
+}
 
 export default function LandingPage() {
+  const [stats, setStats] = useState<Stats>({
+    totalProducts: 0,
+    totalAccommodations: 0,
+    totalUsers: 0,
+    totalUniversities: 0,
+  })
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        // Fetch statistics from database
+        const [
+          { count: productsCount },
+          { count: accommodationsCount },
+          { count: usersCount },
+          { count: universitiesCount },
+        ] = await Promise.all([
+          supabase.from("products").select("*", { count: "exact", head: true }),
+          supabase.from("accommodations").select("*", { count: "exact", head: true }),
+          supabase.from("users").select("*", { count: "exact", head: true }),
+          supabase.from("universities").select("*", { count: "exact", head: true }),
+        ])
+
+        setStats({
+          totalProducts: productsCount || 0,
+          totalAccommodations: accommodationsCount || 0,
+          totalUsers: usersCount || 0,
+          totalUniversities: universitiesCount || 0,
+        })
+      } catch (error) {
+        console.error("Error fetching stats:", error)
+      }
+    }
+
+    fetchStats()
+  }, [])
+
   return (
     <div className="flex min-h-screen flex-col">
       {/* Navigation */}
@@ -44,7 +92,7 @@ export default function LandingPage() {
 
       <main className="flex-1">
         {/* Hero Section */}
-        <HeroSection />
+        <HeroSection stats={stats} />
 
         {/* Product & Accommodation Showcase */}
         <section className="container py-12 md:py-24">
@@ -78,12 +126,12 @@ export default function LandingPage() {
             <FeatureCard
               icon={<ShoppingBag className="h-10 w-10" />}
               title="Student Marketplace"
-              description="Buy and sell textbooks, electronics, clothing, and more directly from other students."
+              description={`Buy and sell textbooks, electronics, clothing, and more directly from other students. ${stats.totalProducts}+ items available.`}
             />
             <FeatureCard
               icon={<Home className="h-10 w-10" />}
               title="Accommodation Finder"
-              description="Find verified off-campus rooms, flats, and houses near your university."
+              description={`Find verified off-campus rooms, flats, and houses near your university. ${stats.totalAccommodations}+ listings available.`}
             />
             <FeatureCard
               icon={<MessageCircle className="h-10 w-10" />}
@@ -127,17 +175,18 @@ export default function LandingPage() {
               <span className="text-gradient">Ready to join Campus Marketplace?</span>
             </h2>
             <p className="max-w-[85%] text-lg text-muted-foreground">
-              Create your account today and start exploring the marketplace or find your perfect accommodation.
+              Join {stats.totalUsers}+ students from {stats.totalUniversities} universities and start exploring the
+              marketplace or find your perfect accommodation.
             </p>
             <div className="flex flex-col gap-4 sm:flex-row">
-              <Link href="/register">
+              <Link href="/signup">
                 <Button size="lg" className="gap-2 relative overflow-hidden group">
                   <span className="absolute inset-0 bg-gradient-to-r from-green-600 to-green-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
                   <span className="relative z-10">Sign up now</span>
                   <ArrowRight className="h-4 w-4 relative z-10 group-hover:translate-x-1 transition-transform duration-300" />
                 </Button>
               </Link>
-              <Link href="/dashboard/marketplace">
+              <Link href="/marketplace">
                 <Button variant="outline" size="lg" className="gradient-border">
                   Explore marketplace
                 </Button>
@@ -164,7 +213,7 @@ export default function LandingPage() {
               <ul className="flex flex-col gap-2 text-sm text-muted-foreground">
                 <li>
                   <Link
-                    href="/dashboard/marketplace"
+                    href="/marketplace"
                     className="hover:text-green-600 dark:hover:text-green-400 transition-colors"
                   >
                     Marketplace
@@ -172,7 +221,7 @@ export default function LandingPage() {
                 </li>
                 <li>
                   <Link
-                    href="/dashboard/accommodation"
+                    href="/accommodation"
                     className="hover:text-green-600 dark:hover:text-green-400 transition-colors"
                   >
                     Accommodation

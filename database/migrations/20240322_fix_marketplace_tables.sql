@@ -145,4 +145,4 @@ WHERE NOT EXISTS (SELECT 1 FROM accommodation_types WHERE name = 'Dormitory');
 
 INSERT INTO accommodation_types (name, description)
 SELECT 'House', 'Shared houses'
-WHERE NOT EXISTS (SELECT 1 FROM accommodation_types WHERE name = 'House'); 
+WHERE NOT EXISTS (SELECT 1 FROM accommodation_types WHERE name = 'House');

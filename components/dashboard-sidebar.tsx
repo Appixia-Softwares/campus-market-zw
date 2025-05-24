@@ -12,6 +12,7 @@ import {
   ShoppingBag,
   User,
   Users,
+  GraduationCap,
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -26,9 +27,61 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
+import { Separator } from "@/components/ui/separator"
+import { useAuth } from "@/lib/auth-context"
 
 export default function DashboardSidebar() {
   const pathname = usePathname() || ""
+  const { user, profile, signOut } = useAuth()
+
+  // Generate initials from full name
+  const getInitials = (fullName: string) => {
+    return fullName
+      .split(" ")
+      .map((name) => name.charAt(0).toUpperCase())
+      .slice(0, 2)
+      .join("")
+  }
+
+  // Get display name
+  const getDisplayName = () => {
+    if (profile?.full_name) {
+      return profile.full_name
+    }
+    if (user?.user_metadata?.full_name) {
+      return user.user_metadata.full_name
+    }
+    if (user?.email) {
+      return user.email.split("@")[0]
+    }
+    return "User"
+  }
+
+  // Get user initials
+  const getUserInitials = () => {
+    const displayName = getDisplayName()
+    return getInitials(displayName)
+  }
+
+  // Get verification status
+  const getVerificationStatus = () => {
+    if (!profile) return { verified: false, count: 0 }
+
+    let verifiedCount = 0
+    if (profile.email_verified) verifiedCount++
+    if (profile.phone_verified) verifiedCount++
+    if (profile.university_id) verifiedCount++
+
+    return {
+      verified: verifiedCount === 3,
+      count: verifiedCount,
+      total: 3,
+    }
+  }
+
+  const verificationStatus = getVerificationStatus()
 
   return (
     <SidebarProvider>
@@ -36,8 +89,58 @@ export default function DashboardSidebar() {
         <SidebarHeader>
           <div className="flex items-center gap-2 px-4 py-2">
             <Building className="h-6 w-6 text-primary animate-bounce-slow" />
-            <span className="font-bold text-xl">Agripa</span>
+            <span className="font-bold text-xl">CampusMarket</span>
             <SidebarTrigger className="ml-auto" />
+          </div>
+
+          {/* User Profile Section */}
+          <div className="px-4 py-3 bg-muted/30 rounded-lg mx-2">
+            <div className="flex items-center gap-3">
+              <Avatar className="h-12 w-12">
+                <AvatarImage src={profile?.avatar_url || user?.user_metadata?.avatar_url} />
+                <AvatarFallback className="bg-primary text-primary-foreground font-semibold text-lg">
+                  {getUserInitials()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">{getDisplayName()}</p>
+                <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+                {profile?.university && (
+                  <div className="flex items-center gap-1 mt-1">
+                    <GraduationCap className="h-3 w-3 text-muted-foreground" />
+                    <p className="text-xs text-muted-foreground truncate">
+                      {profile.university.abbreviation || profile.university.name}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Status and Verification */}
+            <div className="flex items-center justify-between mt-3">
+              <div className="flex items-center gap-2">
+                {profile?.status && (
+                  <Badge variant={profile.status === "active" ? "default" : "secondary"} className="text-xs">
+                    {profile.status}
+                  </Badge>
+                )}
+                {profile?.role && profile.role !== "user" && (
+                  <Badge variant="outline" className="text-xs">
+                    {profile.role}
+                  </Badge>
+                )}
+              </div>
+
+              <div className="text-xs text-muted-foreground">
+                {verificationStatus.verified ? (
+                  <span className="text-green-600 font-medium">✓ Verified</span>
+                ) : (
+                  <span>
+                    {verificationStatus.count}/{verificationStatus.total} verified
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
         </SidebarHeader>
 
@@ -95,6 +198,8 @@ export default function DashboardSidebar() {
               </SidebarMenuButton>
             </SidebarMenuItem>
 
+            <Separator className="my-2" />
+
             <SidebarMenuItem>
               <SidebarMenuButton
                 asChild
@@ -135,6 +240,11 @@ export default function DashboardSidebar() {
                 <Link href="/profile" className="transition-all hover:text-primary">
                   <User className="h-4 w-4" />
                   <span>Profile</span>
+                  {!verificationStatus.verified && (
+                    <Badge variant="destructive" className="ml-auto text-xs">
+                      !
+                    </Badge>
+                  )}
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -149,8 +259,8 @@ export default function DashboardSidebar() {
             </SidebarMenuItem>
 
             <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip="Logout">
-                <button className="transition-all hover:text-destructive">
+              <SidebarMenuButton asChild tooltip="Logout" onClick={() => signOut()}>
+                <button className="transition-all hover:text-destructive w-full">
                   <LogOut className="h-4 w-4" />
                   <span>Logout</span>
                 </button>

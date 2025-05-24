@@ -55,4 +55,4 @@ CREATE POLICY "Accommodations can be viewed with owner info"
 ON accommodations
 FOR SELECT
 TO authenticated, anon
-USING (true); 
+USING (true);

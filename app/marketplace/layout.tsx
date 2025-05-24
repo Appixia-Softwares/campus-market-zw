@@ -39,4 +39,4 @@ export default function MarketplaceLayout({
       </div>
     </SidebarProvider>
   )
-} 
+}

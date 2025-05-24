@@ -30,4 +30,4 @@ BEGIN
         
         GRANT SELECT ON profiles TO authenticated, anon;
     END IF;
-END $$; 
+END $$;

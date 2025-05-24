@@ -18,4 +18,4 @@ USING (status = 'available');
 
 -- Grant necessary permissions
 GRANT SELECT ON products TO authenticated, anon;
-GRANT SELECT ON accommodations TO authenticated, anon; 
+GRANT SELECT ON accommodations TO authenticated, anon;

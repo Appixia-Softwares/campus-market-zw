@@ -1,178 +1,204 @@
 "use client"
 
-import { motion } from "framer-motion"
-import { ArrowRight, MapPin, Users, Wifi, Tv, Star } from "lucide-react"
+import { useEffect, useState } from "react"
+import { ArrowRight, Home, MapPin, Users, Bath } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { supabase } from "@/lib/supabase"
 
-const accommodations = [
-  {
-    id: 1,
-    name: "Cozy Single Room",
-    price: "ZWL 30,000/month",
-    location: "Near UZ Campus",
-    image: "/placeholder.svg?height=200&width=300",
-    type: "Single Room",
-    features: ["Wifi", "Furnished"],
-    rating: 4.6,
-  },
-  {
-    id: 2,
-    name: "2-Bedroom Apartment",
-    price: "ZWL 45,000/month",
-    location: "Mt Pleasant",
-    image: "/placeholder.svg?height=200&width=300",
-    type: "Shared",
-    features: ["Wifi", "TV", "Kitchen"],
-    rating: 4.8,
-  },
-  {
-    id: 3,
-    name: "Studio Apartment",
-    price: "ZWL 35,000/month",
-    location: "Avondale",
-    image: "/placeholder.svg?height=200&width=300",
-    type: "Studio",
-    features: ["Furnished", "Private Bath"],
-    rating: 4.7,
-  },
-  {
-    id: 4,
-    name: "3-Share Room",
-    price: "ZWL 20,000/month",
-    location: "Near NUST",
-    image: "/placeholder.svg?height=200&width=300",
-    type: "Shared",
-    features: ["Wifi", "Security"],
-    rating: 4.5,
-  },
-]
+interface Accommodation {
+  id: string
+  title: string
+  price: number
+  bedrooms: number
+  bathrooms: number
+  max_occupants: number
+  locations: {
+    name: string
+    city: string
+  }
+  accommodation_types: {
+    name: string
+  }
+  accommodation_images: {
+    url: string
+    is_primary: boolean
+  }[]
+  users: {
+    full_name: string
+    verified: boolean
+  }
+}
 
 export default function AccommodationShowcase() {
-  const container = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-      },
-    },
-  }
+  const [accommodations, setAccommodations] = useState<Accommodation[]>([])
+  const [loading, setLoading] = useState(true)
+  const [totalCount, setTotalCount] = useState(0)
 
-  const item = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0 },
+  useEffect(() => {
+    const fetchAccommodations = async () => {
+      try {
+        // Get total count
+        const { count } = await supabase
+          .from("accommodations")
+          .select("*", { count: "exact", head: true })
+          .eq("status", "available")
+
+        setTotalCount(count || 0)
+
+        // Get featured accommodations or latest if no featured
+        const query = supabase
+          .from("accommodations")
+          .select(`
+            id,
+            title,
+            price,
+            bedrooms,
+            bathrooms,
+            max_occupants,
+            locations(name, city),
+            accommodation_types(name),
+            accommodation_images(url, is_primary),
+            users(full_name, verified)
+          `)
+          .eq("status", "available")
+          .limit(4)
+
+        // Try to get featured accommodations first
+        const { data: featuredAccommodations } = await query.eq("featured", true)
+
+        if (featuredAccommodations && featuredAccommodations.length > 0) {
+          setAccommodations(featuredAccommodations)
+        } else {
+          // If no featured accommodations, get latest
+          const { data: latestAccommodations } = await query.order("created_at", { ascending: false })
+          setAccommodations(latestAccommodations || [])
+        }
+      } catch (error) {
+        console.error("Error fetching accommodations:", error)
+        setAccommodations([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchAccommodations()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h3 className="text-2xl font-bold">
+            <span className="text-gradient">Student Accommodation</span>
+          </h3>
+          <div className="h-10 w-32 bg-gray-200 rounded animate-pulse"></div>
+        </div>
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-4">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i} className="overflow-hidden">
+              <div className="aspect-video bg-gray-200 animate-pulse"></div>
+              <CardContent className="p-4 space-y-2">
+                <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                <div className="h-4 bg-gray-200 rounded w-2/3 animate-pulse"></div>
+                <div className="h-4 bg-gray-200 rounded w-1/2 animate-pulse"></div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    )
   }
 
   return (
-    <div className="space-y-6 pt-12">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <motion.h3
-          className="text-2xl font-bold relative"
-          initial={{ opacity: 0, x: -20 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-        >
+        <h3 className="text-2xl font-bold">
           <span className="text-gradient">Student Accommodation</span>
-          <motion.div
-            className="absolute -bottom-2 left-0 h-1 bg-gradient-to-r from-green-600 to-green-300 rounded-full"
-            initial={{ width: 0 }}
-            whileInView={{ width: "100%" }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.2, duration: 0.8 }}
-          />
-        </motion.h3>
+        </h3>
         <Link href="/accommodation">
           <Button variant="ghost" className="gap-2 group">
-            View all
+            {totalCount > 0 ? `View all ${totalCount} listings` : "Browse accommodation"}
             <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
           </Button>
         </Link>
       </div>
 
-      <motion.div
-        className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-4"
-        variants={container}
-        initial="hidden"
-        whileInView="show"
-        viewport={{ once: true }}
-      >
-        {accommodations.map((accommodation, index) => (
-          <motion.div
-            key={accommodation.id}
-            variants={item}
-            whileHover={{
-              y: -10,
-              transition: { duration: 0.3 },
-            }}
-            className="card-hover-effect"
-          >
-            <Card className="h-full overflow-hidden transition-all border-green-100 dark:border-green-900 relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-green-50/50 to-transparent dark:from-green-950/30 dark:to-transparent opacity-60 z-0"></div>
-              <div className="aspect-video overflow-hidden image-hover-zoom relative">
+      {accommodations.length === 0 ? (
+        <Card className="p-12 text-center">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/50 flex items-center justify-center">
+              <Home className="h-8 w-8 text-green-600 dark:text-green-400" />
+            </div>
+            <div className="space-y-2">
+              <h4 className="text-lg font-semibold">No accommodations yet</h4>
+              <p className="text-muted-foreground">
+                Be the first to list accommodation! Students are looking for rooms, flats, and houses near universities.
+              </p>
+            </div>
+            <Link href="/signup">
+              <Button className="gap-2">
+                <Home className="h-4 w-4" />
+                List accommodation
+              </Button>
+            </Link>
+          </div>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-4">
+          {accommodations.map((accommodation) => (
+            <Card key={accommodation.id} className="overflow-hidden group hover:shadow-lg transition-shadow">
+              <div className="aspect-video overflow-hidden bg-gray-100">
                 <img
-                  src={accommodation.image || "/placeholder.svg"}
-                  alt={accommodation.name}
-                  className="h-full w-full object-cover"
+                  src={
+                    accommodation.accommodation_images.find((img) => img.is_primary)?.url ||
+                    "/placeholder.svg?height=200&width=300" ||
+                    "/placeholder.svg"
+                  }
+                  alt={accommodation.title}
+                  className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-end p-4"
-                  initial={{ opacity: 0 }}
-                  whileHover={{ opacity: 1 }}
-                >
-                  <span className="text-white font-medium">View Details</span>
-                </motion.div>
-
-                {/* Price tag */}
-                <div className="absolute top-3 right-3 bg-green-600 text-white px-2 py-1 rounded-md text-sm font-bold shadow-lg">
-                  {accommodation.price.split("/")[0]}
-                </div>
               </div>
-              <CardHeader className="p-4 pb-0 relative">
-                <div className="flex justify-between">
-                  <Badge className="bg-green-500 hover:bg-green-600 text-white">{accommodation.type}</Badge>
-                  <div className="flex items-center gap-1">
-                    <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
-                    <span className="text-sm">{accommodation.rating}</span>
+              <CardContent className="p-4">
+                <div className="space-y-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <h4 className="font-semibold line-clamp-1 text-sm">{accommodation.title}</h4>
+                    {accommodation.users.verified && (
+                      <Badge variant="secondary" className="text-xs">
+                        Verified
+                      </Badge>
+                    )}
                   </div>
-                </div>
-                <CardTitle className="line-clamp-1 text-lg mt-2">{accommodation.name}</CardTitle>
-                <div className="flex items-center text-sm text-muted-foreground mt-1">
-                  <MapPin className="mr-1 h-3.5 w-3.5 text-green-500" />
-                  {accommodation.location}
-                </div>
-              </CardHeader>
-              <CardContent className="p-4 pt-2 relative">
-                <p className="font-bold text-green-600 dark:text-green-400">{accommodation.price}</p>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {accommodation.features.map((feature, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center text-xs bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 px-2 py-1 rounded-full"
-                    >
-                      {feature === "Wifi" && <Wifi className="mr-1 h-3 w-3" />}
-                      {feature === "TV" && <Tv className="mr-1 h-3 w-3" />}
-                      {feature === "Shared" && <Users className="mr-1 h-3 w-3" />}
-                      {feature}
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <MapPin className="h-3 w-3" />
+                    <span>
+                      {accommodation.locations.name}, {accommodation.locations.city}
+                    </span>
+                  </div>
+                  <p className="font-bold text-green-600">ZWL {accommodation.price.toLocaleString()}/month</p>
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <Home className="h-3 w-3" />
+                      <span>{accommodation.bedrooms} bed</span>
                     </div>
-                  ))}
+                    <div className="flex items-center gap-1">
+                      <Bath className="h-3 w-3" />
+                      <span>{accommodation.bathrooms} bath</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Users className="h-3 w-3" />
+                      <span>{accommodation.max_occupants} max</span>
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground">by {accommodation.users.full_name}</p>
                 </div>
               </CardContent>
-              <CardFooter className="p-4 pt-0 relative">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full border-green-200 dark:border-green-800 hover:bg-green-100 dark:hover:bg-green-900/50 hover:text-green-700 dark:hover:text-green-300"
-                >
-                  View Details
-                </Button>
-              </CardFooter>
             </Card>
-          </motion.div>
-        ))}
-      </motion.div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

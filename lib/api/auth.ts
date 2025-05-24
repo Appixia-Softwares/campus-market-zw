@@ -1,5 +1,4 @@
 import { supabase } from "@/lib/supabase"
-import type { Database } from "@/lib/database.types"
 
 interface SignUpData {
   full_name: string
@@ -21,15 +20,15 @@ interface AuthResponse<T> {
 export async function signUp(
   email: string,
   password: string,
-  data: SignUpData
+  data: SignUpData,
 ): Promise<AuthResponse<{ user: any; profile: any }>> {
   try {
-    console.log('Debug - Starting signup process with data:', { email, ...data })
-    
-    const response = await fetch('/api/auth/signup', {
-      method: 'POST',
+    console.log("Debug - Starting signup process with data:", { email, ...data })
+
+    const response = await fetch("/api/auth/signup", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         email,
@@ -42,18 +41,18 @@ export async function signUp(
     const result = await response.json()
 
     if (!response.ok) {
-      console.error('Debug - Signup error:', result.error)
+      console.error("Debug - Signup error:", result.error)
       return { data: null, error: { message: result.error } }
     }
 
-    console.log('Debug - Signup successful:', result)
+    console.log("Debug - Signup successful:", result)
     return { data: result, error: null }
   } catch (error: any) {
-    console.error('Debug - Unexpected error in signup:', error)
+    console.error("Debug - Unexpected error in signup:", error)
     return {
       data: null,
       error: {
-        message: error.message || 'An unexpected error occurred during signup',
+        message: error.message || "An unexpected error occurred during signup",
       },
     }
   }
@@ -75,7 +74,7 @@ export async function signIn(email: string, password: string): Promise<AuthRespo
     return {
       data: null,
       error: {
-        message: error.message || 'An unexpected error occurred during sign in',
+        message: error.message || "An unexpected error occurred during sign in",
       },
     }
   }
@@ -92,7 +91,7 @@ export async function signOut(): Promise<AuthResponse<null>> {
     return {
       data: null,
       error: {
-        message: error.message || 'An unexpected error occurred during sign out',
+        message: error.message || "An unexpected error occurred during sign out",
       },
     }
   }
@@ -100,8 +99,11 @@ export async function signOut(): Promise<AuthResponse<null>> {
 
 export async function getCurrentUser(): Promise<AuthResponse<{ user: any; profile: any }>> {
   try {
-    const { data: { user }, error: userError } = await supabase.auth.getUser()
-    
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser()
+
     if (userError) {
       return { data: null, error: { message: userError.message } }
     }
@@ -110,13 +112,23 @@ export async function getCurrentUser(): Promise<AuthResponse<{ user: any; profil
       return { data: null, error: null }
     }
 
+    // Fetch user profile from our users table with university info
     const { data: profile, error: profileError } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', user.id)
+      .from("users")
+      .select(`
+        *,
+        university:universities(
+          id,
+          name,
+          location,
+          abbreviation
+        )
+      `)
+      .eq("id", user.id)
       .single()
 
     if (profileError) {
+      console.error("Debug - Profile fetch error:", profileError)
       return { data: null, error: { message: profileError.message } }
     }
 
@@ -131,7 +143,7 @@ export async function getCurrentUser(): Promise<AuthResponse<{ user: any; profil
     return {
       data: null,
       error: {
-        message: error.message || 'An unexpected error occurred while getting user data',
+        message: error.message || "An unexpected error occurred while getting user data",
       },
     }
   }
@@ -144,15 +156,10 @@ export async function updateUserProfile(
     university_id: string
     status: string
     verified: boolean
-  }>
+  }>,
 ): Promise<AuthResponse<{ profile: any }>> {
   try {
-    const { data, error } = await supabase
-      .from('users')
-      .update(updates)
-      .eq('id', userId)
-      .select()
-      .single()
+    const { data, error } = await supabase.from("users").update(updates).eq("id", userId).select().single()
 
     if (error) {
       return { data: null, error: { message: error.message } }
@@ -163,7 +170,7 @@ export async function updateUserProfile(
     return {
       data: null,
       error: {
-        message: error.message || 'An unexpected error occurred while updating profile',
+        message: error.message || "An unexpected error occurred while updating profile",
       },
     }
   }
@@ -171,48 +178,43 @@ export async function updateUserProfile(
 
 export async function getUniversities(): Promise<AuthResponse<Array<{ id: string; name: string; location: string }>>> {
   try {
-    console.log('Debug - Starting to fetch universities')
-    
-    // First, let's check if we can access the table at all
-    const { count, error: countError } = await supabase
-      .from('universities')
-      .select('*', { count: 'exact', head: true })
+    console.log("Debug - Starting to fetch universities")
 
-    console.log('Debug - Count query result:', { count, error: countError })
+    // First, let's check if we can access the table at all
+    const { count, error: countError } = await supabase.from("universities").select("*", { count: "exact", head: true })
+
+    console.log("Debug - Count query result:", { count, error: countError })
 
     if (countError) {
-      console.error('Debug - Error getting count:', countError)
+      console.error("Debug - Error getting count:", countError)
       return { data: null, error: { message: countError.message } }
     }
 
     // Now try to get the actual data
-    const { data, error } = await supabase
-      .from('universities')
-      .select('id, name, location')
-      .order('name')
+    const { data, error } = await supabase.from("universities").select("id, name, location").order("name")
 
-    console.log('Debug - Data query result:', { data, error })
+    console.log("Debug - Data query result:", { data, error })
 
     if (error) {
-      console.error('Debug - Error fetching universities:', error)
+      console.error("Debug - Error fetching universities:", error)
       return { data: null, error: { message: error.message } }
     }
 
     if (!data || data.length === 0) {
-      console.log('Debug - No universities found in database')
+      console.log("Debug - No universities found in database")
       return { data: [], error: null }
     }
 
-    console.log('Debug - Successfully fetched universities:', data.length)
-    console.log('Debug - First university:', data[0])
+    console.log("Debug - Successfully fetched universities:", data.length)
+    console.log("Debug - First university:", data[0])
     return { data, error: null }
   } catch (error: any) {
-    console.error('Debug - Unexpected error fetching universities:', error)
-    console.error('Debug - Error stack:', error.stack)
+    console.error("Debug - Unexpected error fetching universities:", error)
+    console.error("Debug - Error stack:", error.stack)
     return {
       data: null,
       error: {
-        message: error.message || 'An unexpected error occurred while fetching universities',
+        message: error.message || "An unexpected error occurred while fetching universities",
       },
     }
   }
