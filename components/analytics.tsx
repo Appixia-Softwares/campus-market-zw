@@ -15,10 +15,13 @@ export function Analytics() {
   const retryCount = useRef(0)
 
   useEffect(() => {
-    if (!pathname) return
+    if (!pathname || typeof window === 'undefined') return
 
     const trackPageView = async () => {
       try {
+        // Only track if we have a valid path
+        if (!pathname.startsWith('/')) return
+
         const { error } = await supabase.from("page_views").insert({
           path: pathname,
           query_params: searchParams?.toString() || null,
@@ -28,13 +31,14 @@ export function Analytics() {
         })
 
         if (error) {
-          throw error
+          console.warn("Analytics error:", error)
+          return
         }
 
         // Reset retry count on success
         retryCount.current = 0
       } catch (error) {
-        console.error("Analytics error:", error)
+        console.warn("Analytics error:", error)
         
         // Retry logic
         if (retryCount.current < MAX_RETRIES) {

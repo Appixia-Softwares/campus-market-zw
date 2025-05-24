@@ -1,5 +1,4 @@
 import type { Metadata } from "next"
-import { redirect } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { DashboardStats } from "@/components/dashboard-stats"
@@ -7,7 +6,8 @@ import { RecentActivity } from "@/components/recent-activity"
 import { MessagesPreview } from "@/components/messages-preview"
 import { MarketplacePreview } from "@/components/marketplace-preview"
 import { CampusEvents } from "@/components/campus-events"
-import { supabase } from "@/lib/supabase"
+import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
 
 export const metadata: Metadata = {
   title: "Dashboard | ZimStudentHub",
@@ -15,15 +15,36 @@ export const metadata: Metadata = {
 }
 
 async function getUserProfile() {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const cookieStore = await cookies()
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value
+        },
+      },
+    }
+  )
 
-  if (!user) {
-    redirect("/login")
+  const { data: { user }, error: userError } = await supabase.auth.getUser()
+  
+  if (userError || !user) {
+    console.error('Debug - Error getting user:', userError)
+    return { user: null, profile: null }
   }
 
-  const { data: profile } = await supabase.from("users").select("*").eq("id", user.id).single()
+  const { data: profile, error: profileError } = await supabase
+    .from("users")
+    .select("*")
+    .eq("id", user.id)
+    .single()
+
+  if (profileError) {
+    console.error('Debug - Error getting profile:', profileError)
+    return { user, profile: null }
+  }
 
   return { user, profile }
 }
@@ -31,10 +52,21 @@ async function getUserProfile() {
 export default async function DashboardPage() {
   const { user, profile } = await getUserProfile()
 
+  if (!user) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Authentication Required</CardTitle>
+          <CardDescription>Please sign in to view your dashboard</CardDescription>
+        </CardHeader>
+      </Card>
+    )
+  }
+
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
       </div>
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsList>

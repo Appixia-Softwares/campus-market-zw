@@ -14,7 +14,7 @@ import { useRealtime } from "@/lib/realtime-context"
 import { useAuth } from "@/lib/auth-context"
 import { getAccommodations, type AccommodationWithDetails } from "@/lib/api/accommodations"
 import { motion, AnimatePresence } from "framer-motion"
-import { supabase } from "@/lib/supabase-client"
+import { supabase } from "@/lib/supabase"
 
 interface AccommodationListProps {
   initialAccommodations?: AccommodationWithDetails[]

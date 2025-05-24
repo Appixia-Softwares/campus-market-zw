@@ -270,16 +270,39 @@ ALTER TABLE reviews ENABLE ROW LEVEL SECURITY;
 ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE saved_items ENABLE ROW LEVEL SECURITY;
 
+-- Drop existing policies if they exist
+DROP POLICY IF EXISTS "Users can view all active users" ON users;
+DROP POLICY IF EXISTS "Allow user creation during signup" ON users;
+DROP POLICY IF EXISTS "Users can update their own profile" ON users;
+DROP POLICY IF EXISTS "Universities are viewable by everyone" ON universities;
+DROP POLICY IF EXISTS "Locations are viewable by everyone" ON locations;
+DROP POLICY IF EXISTS "Accommodation types are viewable by everyone" ON accommodation_types;
+DROP POLICY IF EXISTS "Amenities are viewable by everyone" ON amenities;
+DROP POLICY IF EXISTS "Accommodations are viewable by everyone if available" ON accommodations;
+DROP POLICY IF EXISTS "Users can create their own accommodations" ON accommodations;
+DROP POLICY IF EXISTS "Users can update their own accommodations" ON accommodations;
+DROP POLICY IF EXISTS "Product categories are viewable by everyone" ON product_categories;
+DROP POLICY IF EXISTS "Products are viewable by everyone if active" ON products;
+DROP POLICY IF EXISTS "Users can create their own products" ON products;
+DROP POLICY IF EXISTS "Users can update their own products" ON products;
+DROP POLICY IF EXISTS "Reviews are viewable by everyone" ON reviews;
+DROP POLICY IF EXISTS "Users can create their own reviews" ON reviews;
+DROP POLICY IF EXISTS "Users can view messages they sent or received" ON messages;
+DROP POLICY IF EXISTS "Users can send messages" ON messages;
+DROP POLICY IF EXISTS "Users can view their own saved items" ON saved_items;
+DROP POLICY IF EXISTS "Users can save items" ON saved_items;
+
 -- Create RLS policies
 -- Users policies
 CREATE POLICY "Users can view all active users"
 ON users FOR SELECT
 USING (status = 'active');
 
-CREATE POLICY "Users can create their own user record"
+-- Allow user creation during signup
+CREATE POLICY "Allow user creation during signup"
 ON users FOR INSERT
 TO authenticated
-WITH CHECK (auth.uid() = id);
+WITH CHECK (true);
 
 CREATE POLICY "Users can update their own profile"
 ON users FOR UPDATE
