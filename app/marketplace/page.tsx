@@ -250,7 +250,6 @@ export default function MarketplacePage() {
           <TabsList className="grid grid-cols-3 w-full max-w-md">
             <TabsTrigger value="featured">Featured</TabsTrigger>
             <TabsTrigger value="products">Products</TabsTrigger>
-            <TabsTrigger value="accommodation">Housing</TabsTrigger>
           </TabsList>
 
           <TabsContent value="featured" className="mt-6 space-y-8">

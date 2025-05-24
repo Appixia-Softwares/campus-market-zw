@@ -10,7 +10,6 @@ import VerificationSection from "@/components/verification-section"
 import PwaFeatures from "@/components/pwa-features"
 import TestimonialCarousel from "@/components/testimonial-carousel"
 import ProductShowcase from "@/components/product-showcase"
-import AccommodationShowcase from "@/components/accommodation-showcase"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { supabase } from "@/lib/supabase"
@@ -107,7 +106,6 @@ export default function LandingPage() {
 
           <div className="mt-16 grid gap-8">
             <ProductShowcase />
-            <AccommodationShowcase />
           </div>
         </section>
 
