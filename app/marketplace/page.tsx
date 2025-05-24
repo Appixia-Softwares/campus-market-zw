@@ -54,10 +54,7 @@ export default function MarketplacePage() {
         .from('products')
         .select(`
           *,
-          seller:profiles(id, full_name),
-          images:product_images(url),
-          favorites_count:favorites(count),
-          messages_count:messages(count)
+          product_images(url)
         `)
         .eq('status', 'active')
 
@@ -100,8 +97,10 @@ export default function MarketplacePage() {
       // Transform the data to match the ProductCard interface
       const transformedData = data.map(product => ({
         ...product,
-        favorites_count: product.favorites_count?.[0]?.count || 0,
-        messages_count: product.messages_count?.[0]?.count || 0
+        images: product.product_images || [],
+        seller: { id: product.seller_id, full_name: 'Seller' }, // We'll enhance this later
+        favorites_count: 0, // We'll implement this later
+        messages_count: 0 // We'll implement this later
       }))
 
       setProducts(transformedData)
