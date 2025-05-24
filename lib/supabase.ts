@@ -1,73 +1,75 @@
 import { createClient } from "@supabase/supabase-js"
 import type { Database } from "./database.types"
+import { env, validateEnv } from "./env"
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+// Validate environment variables on import
+validateEnv()
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error("Missing Supabase environment variables")
-}
+// Create Supabase client with proper configuration
+export const supabase = createClient<Database>(env.SUPABASE_URL, env.SUPABASE_ANON_KEY, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+    flowType: "pkce",
+  },
+  realtime: {
+    params: {
+      eventsPerSecond: 10,
+    },
+  },
+  global: {
+    headers: {
+      "X-Client-Info": "campus-market-zw",
+    },
+  },
+})
 
-// Single client instance for browser with default configuration
-let clientInstance: ReturnType<typeof createClient<Database>> | null = null
+// Test connection function
+export async function testConnection(timeout = 5000): Promise<{ success: boolean; error?: string }> {
+  try {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), timeout)
 
-export const supabase = (() => {
-  if (!clientInstance) {
-    clientInstance = createClient<Database>(supabaseUrl, supabaseAnonKey, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true
-      },
-      global: {
-        headers: {
-          "X-Client-Info": "campusmarket-web",
-        },
-      },
-      db: {
-        schema: "public",
-      },
-    })
-    console.log("✅ Created Supabase client")
-  }
-  return clientInstance
-})()
+    const { data, error } = await supabase.from("users").select("count").limit(1).abortSignal(controller.signal)
 
-// Enhanced connection test with retry logic
-export async function testConnection(retries = 3): Promise<{ success: boolean; error?: string }> {
-  for (let i = 0; i < retries; i++) {
-    try {
-      // Test with a simple auth check first
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+    clearTimeout(timeoutId)
 
-      if (sessionError && sessionError.message !== "Auth session missing!") {
-        if (i === retries - 1) {
-          return { success: false, error: sessionError.message }
-        }
-        continue
-      }
+    if (error) {
+      console.error("Supabase connection test failed:", error)
+      return { success: false, error: error.message }
+    }
 
-      // If auth works, test database connection
-      const { data: testData, error: dbError } = await supabase.from("users").select("count").limit(1).maybeSingle()
-
-      if (dbError) {
-        if (i === retries - 1) {
-          return { success: false, error: dbError.message }
-        }
-        continue
-      }
-
-      return { success: true }
-    } catch (error: any) {
-      if (i === retries - 1) {
-        return { success: false, error: error.message || "Network error" }
-      }
-      // Wait before retry
-      await new Promise((resolve) => setTimeout(resolve, 1000 * (i + 1)))
+    return { success: true }
+  } catch (error: any) {
+    console.error("Supabase connection test error:", error)
+    return {
+      success: false,
+      error: error.name === "AbortError" ? "Connection timeout" : error.message,
     }
   }
+}
 
-  return { success: false, error: "Max retries exceeded" }
+// Health check function
+export async function healthCheck() {
+  try {
+    const { data, error } = await supabase.from("users").select("count").limit(1)
+
+    return {
+      database: !error,
+      auth: !!supabase.auth,
+      realtime: !!supabase.realtime,
+      timestamp: new Date().toISOString(),
+    }
+  } catch (error) {
+    return {
+      database: false,
+      auth: false,
+      realtime: false,
+      timestamp: new Date().toISOString(),
+      error: error instanceof Error ? error.message : "Unknown error",
+    }
+  }
 }
 
 export default supabase

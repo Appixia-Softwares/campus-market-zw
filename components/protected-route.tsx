@@ -61,4 +61,4 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
   // 2. User is authenticated and has required role
   // 3. User is authenticated and no role is required
   return <>{children}</>
-} 
+}

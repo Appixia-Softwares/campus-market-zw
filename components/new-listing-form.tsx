@@ -125,7 +125,7 @@ export function NewListingForm() {
           title: "Listing created",
           description: "Your accommodation listing has been created successfully",
         })
-        router.push("/landlord/listings")
+        router.push("/my-listings")
       } else {
         toast({
           title: "Error",

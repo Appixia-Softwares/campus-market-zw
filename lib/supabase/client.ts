@@ -1,16 +1,20 @@
 import { createClient } from "@supabase/supabase-js"
 import type { Database } from "../database.types"
+import { env } from "../env"
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-
-// Client-side Supabase client
+// Client-side Supabase client using centralized env config
 export const createClientComponentClient = () =>
-  createClient<Database>(supabaseUrl, supabaseAnonKey, {
+  createClient<Database>(env.SUPABASE_URL, env.SUPABASE_ANON_KEY, {
     auth: {
       persistSession: true,
       autoRefreshToken: true,
       detectSessionInUrl: true,
+      flowType: "pkce",
+    },
+    realtime: {
+      params: {
+        eventsPerSecond: 10,
+      },
     },
   })
 
