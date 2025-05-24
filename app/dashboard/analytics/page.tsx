@@ -60,6 +60,8 @@ export default function AnalyticsPage() {
               from last month
             </p>
           </CardContent>
-        </Card> a comprehensive student dashboard with a sidebar that provides access to the marketplace and a listings management page, along with enhanced UI and animations.
-
-\
+        </Card>
+      </div>
+    </div>
+  )
+}

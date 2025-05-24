@@ -1,42 +1,29 @@
 "use client"
 
 import type React from "react"
-import { SidebarProvider } from "@/components/ui/sidebar"
-import { AppSidebar } from "@/components/app-sidebar"
-import { UserNav } from "@/components/user-nav"
-import { ModeToggle } from "@/components/mode-toggle"
-import { Search } from "lucide-react"
-import { Input } from "@/components/ui/input"
+import DashboardSidebar from "@/components/dashboard-sidebar"
+import { DashboardHeader } from "@/components/dashboard-header"
+import { useState } from "react"
 
 export default function MarketplaceLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  return (
-    <SidebarProvider>
-      <div className="flex min-h-screen">
-        <AppSidebar />
-        <div className="flex-1">
-          <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-6">
-            <div className="flex flex-1 items-center justify-between">
-              <div className="relative w-full max-w-sm">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="search"
-                  placeholder="Search marketplace..."
-                  className="w-full rounded-lg bg-background pl-8 md:w-[240px] lg:w-[440px]"
-                />
-              </div>
-              <div className="flex items-center space-x-2">
-                <ModeToggle />
-                <UserNav />
-              </div>
-            </div>
-          </header>
-          <main className="flex-1 p-6">{children}</main>
-        </div>
-      </div>
-    </SidebarProvider>
+  const [collapsed, setCollapsed] = useState(false)
+  return (  
+    <div className="flex h-screen w-screen overflow-hidden">
+    {/* Sidebar */}
+    <div className={`transition-all duration-300 h-full ${collapsed ? 'w-16' : 'w-64'} flex-shrink-0`}>
+      <DashboardSidebar collapsed={collapsed} onToggle={() => setCollapsed((c) => !c)} />
+    </div>
+    {/* Main Content Area */}
+    <div className="flex-1 flex flex-col overflow-hidden">
+      <DashboardHeader />
+      <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-background">
+        {children}
+      </main>
+    </div>
+  </div>
   )
 }

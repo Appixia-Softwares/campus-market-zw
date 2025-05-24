@@ -21,8 +21,12 @@ import {
 } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
 import { supabase } from "@/lib/supabase"
+import { useRouter } from "next/navigation"
+import AnalyticsPage from "./analytics/page"
+import Link from "next/link"
 
 export default function DashboardClientPage() {
+  const router = useRouter()
   const { user, profile, loading } = useAuth()
   const [stats, setStats] = useState({
     accommodations: 0,
@@ -33,6 +37,11 @@ export default function DashboardClientPage() {
   const [statsLoading, setStatsLoading] = useState(true)
 
   useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login')
+      return
+    }
+
     const fetchUserStats = async () => {
       if (!user) return
 
@@ -86,11 +95,11 @@ export default function DashboardClientPage() {
     }
 
     fetchUserStats()
-  }, [user])
+  }, [user, loading, router])
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-[50vh]">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
           <p className="text-muted-foreground">Loading dashboard...</p>
@@ -101,12 +110,12 @@ export default function DashboardClientPage() {
 
   if (!user || !profile) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-[50vh]">
         <div className="text-center">
           <AlertCircle className="h-8 w-8 text-red-500 mx-auto mb-2" />
           <p className="text-muted-foreground">Unable to load user data</p>
-          <Button className="mt-4" onClick={() => window.location.reload()}>
-            Retry
+          <Button className="mt-4" onClick={() => router.push('/login')}>
+            Go to Login
           </Button>
         </div>
       </div>
@@ -114,7 +123,7 @@ export default function DashboardClientPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="space-y-6">
       {/* Welcome Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -257,6 +266,7 @@ export default function DashboardClientPage() {
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="activity">Recent Activity</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
@@ -267,18 +277,24 @@ export default function DashboardClientPage() {
                 <CardDescription>Common tasks for Zimbabwe students</CardDescription>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Button className="w-full justify-start" variant="outline">
-                  <Home className="mr-2 h-4 w-4" />
-                  List Accommodation
-                </Button>
-                <Button className="w-full justify-start" variant="outline">
-                  <Package className="mr-2 h-4 w-4" />
-                  Sell Item
-                </Button>
-                <Button className="w-full justify-start" variant="outline">
-                  <MessageSquare className="mr-2 h-4 w-4" />
-                  View Messages
-                </Button>
+                <Link href="/landlord/listings/new" className="w-full">
+                  <Button className="w-full justify-start" variant="outline">
+                    <Home className="mr-2 h-4 w-4" />
+                    List Accommodation
+                  </Button>
+                </Link>
+                <Link href="/marketplace/listings/new" className="w-full">
+                  <Button className="w-full justify-start" variant="outline">
+                    <Package className="mr-2 h-4 w-4" />
+                    Sell Item
+                  </Button>
+                </Link>
+                <Link href="/messages" className="w-full">
+                  <Button className="w-full justify-start" variant="outline">
+                    <MessageSquare className="mr-2 h-4 w-4" />
+                    View Messages
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
 
@@ -321,6 +337,10 @@ export default function DashboardClientPage() {
               <p className="text-muted-foreground">No recent activity to display.</p>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="analytics">
+          <AnalyticsPage />
         </TabsContent>
       </Tabs>
     </div>

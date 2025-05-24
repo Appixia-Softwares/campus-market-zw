@@ -239,7 +239,7 @@ export default function MarketplacePage() {
             </div>
           </div>
 
-          <Link href="/dashboard/student/listings/new">
+          <Link href="/marketplace/listings/new">
             <Button className="w-full md:w-auto gap-1 shadow-sm">
               <Plus className="h-4 w-4" /> Add Listing
             </Button>
@@ -281,21 +281,6 @@ export default function MarketplacePage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {products.map((product) => (
                   <ProductCard key={product.id} product={product} />
-                ))}
-              </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="accommodation" className="mt-6" id="accommodation">
-            <div className="space-y-6">
-              <div>
-                <h2 className="text-2xl font-semibold">All Accommodations</h2>
-                <p className="text-muted-foreground">Find your perfect student housing</p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {accommodations.map((accommodation) => (
-                  <AccommodationCard key={accommodation.id} accommodation={accommodation} />
                 ))}
               </div>
             </div>
